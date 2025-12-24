@@ -1,28 +1,60 @@
 # User Registration
 
-- User Schema
-- Service Layer (`createUser`)
-- Controller (`registerUser`)
-- Valid Request Format
-- Example Success Response
-- Example Error Responses
+---
 
+## Endpoint
+
+### **POST /users/register**
 
 ---
 
-## 1. User Model
+## Description
 
-The `User` model stores:
+Registers a new user by creating a user account with the provided information.  
+Validates input fields, hashes the password, saves the user, and returns a JWT token.
 
-- `fullname.firstname` (string, min length 4)
-- `fullname.lastname` (string, min length 4)
-- `email` (unique, required)
-- `password` (hashed & hidden by default)
-- `socketId` (optional)
+---
 
-It also includes password hashing and token generation.
+## Request Body (JSON)
 
-### Example Request
+The request body must contain the following fields:
+
+### **fullname** (object)
+Wrapper object containing user's first and last name.
+- **Required:** Yes
+- **Type:** Object
+
+#### fullname.firstname
+- **Description:** User's first name
+- **Type:** String
+- **Required:** Yes
+- **Validation:** Minimum 4 characters
+
+#### fullname.lastname
+- **Description:** User's last name
+- **Type:** String
+- **Required:** Yes
+- **Validation:** Minimum 4 characters
+
+---
+
+### **email**
+- **Description:** User's email address
+- **Type:** String
+- **Required:** Yes
+- **Validation:** Must be a valid and unique email
+
+---
+
+### **password**
+- **Description:** User’s password (will be hashed before saving)
+- **Type:** String
+- **Required:** Yes
+- **Validation:** Minimum 6 characters
+
+---
+
+## Example Request Body
 
 ```json
 {
