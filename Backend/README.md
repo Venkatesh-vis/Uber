@@ -190,3 +190,166 @@ This ensures the token cannot be reused for future authenticated requests.
 - Invalid token
 - Expired token
 - Token already blacklisted  
+
+# Captain Registration
+
+## Endpoint
+
+### POST /captain/register
+
+---
+
+## Description
+
+Registers a new captain by validating the provided details, hashing the password, saving the captain in the database, and returning a JWT authentication token.
+
+This endpoint performs:
+
+- Validation of all input fields
+- Ensures the email is unique
+- Hashes password using bcrypt
+- Creates a new captain record
+- Generates a JWT token
+- Returns captain details and token
+
+---
+
+## Request Body (JSON)
+
+### fullname (object)
+
+#### fullname.firstname
+- Type: String
+- Required: Yes
+- Minimum: 4 characters
+
+#### fullname.lastname
+- Type: String
+- Required: Yes
+- Minimum: 4 characters
+
+---
+
+### email
+- Type: String
+- Required: Yes
+- Must be a valid email
+- Must be unique
+
+---
+
+### password
+- Type: String
+- Required: Yes
+- Minimum: 6 characters
+
+---
+
+### vehicle (object)
+
+#### vehicle.color
+- Type: String
+- Required: Yes
+- Minimum: 3 characters
+
+#### vehicle.plate
+- Type: String
+- Required: Yes
+- Minimum: 6 characters
+
+#### vehicle.capacity
+- Type: Number
+- Required: Yes
+- Minimum: 1
+
+#### vehicle.vehicleType
+- Type: String
+- Required: Yes
+- Allowed values:
+    - car
+    - motorcycle
+    - auto
+
+---
+
+### location (optional)
+
+#### location.lat
+- Type: Number
+- Optional
+
+#### location.long
+- Type: Number
+- Optional
+
+---
+
+## Example Request Body
+
+```json
+{
+  "fullname": {
+    "firstname": "Rahul",
+    "lastname": "Sharma"
+  },
+  "email": "rahul.captain@example.com",
+  "password": "securepass123",
+  "vehicle": {
+    "color": "Black",
+    "plate": "MH09123456",
+    "capacity": 3,
+    "vehicleType": "car"
+  },
+  "location": {
+    "lat": 19.076,
+    "long": 72.8777
+  }
+}
+```
+
+## Success Response
+
+```json
+{
+  "token": "jwt-token-here",
+  "captain": {
+    "_id": "695a12b41ed98c88dfd4413a",
+    "fullname": {
+      "firstname": "Rahul",
+      "lastname": "Sharma"
+    },
+    "email": "rahul.captain@example.com",
+    "vehicle": {
+      "color": "Black",
+      "plate": "MH09123456",
+      "capacity": 3,
+      "vehicleType": "car"
+    },
+    "status": "inactive"
+  }
+}
+```
+
+## Possible Errors
+### **400 Bad Request**
+
+```json
+{
+  "errors": [
+    {
+      "msg": "first name must must be at least 4 characters long",
+      "param": "fullname.firstname",
+      "location": "body"
+    }
+  ]
+}
+
+```
+### **Example: Email Exists**
+
+```json
+{
+  "message": "Captain already exists"
+}
+
+```
