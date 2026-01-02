@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
-const { registerCaptain } = require("../controllers/captain.controller");
+const { registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain } = require("../controllers/captain.controller");
+const { authCaptain } = require("../Middlewares/auth.middleware");
+
 
 router.post("/register", [
     body('email').isEmail().withMessage("Invalid Email"),
@@ -15,6 +17,15 @@ router.post("/register", [
     body("location.lat").optional().isFloat().withMessage("Latitude must be a number"),
     body("location.long").optional().isFloat().withMessage("Longitude must be a number"),
 ],registerCaptain)
+
+router.post("/login", [
+    body("email").isEmail().withMessage("Invalid Email"),
+    body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
+],loginCaptain)
+
+router.post("/profile", authCaptain, getCaptainProfile)
+
+router.post("/logout", authCaptain, logoutCaptain)
 
 
 module.exports = router

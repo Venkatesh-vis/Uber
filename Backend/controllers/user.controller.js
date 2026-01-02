@@ -12,10 +12,10 @@ const registerUser = async (req, res, next) => {
     const { fullname, email, password } = req.body;
     const { firstname, lastname } = fullname;
 
-    const isUserAlreadyExists = userModel.findOne({ email });
+    const isUserAlreadyExists = await userModel.findOne({ email });
 
     if (isUserAlreadyExists) {
-        res.status(400).json({ message: "User already exists" });
+        return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await userModel.hashPassword(password);
@@ -29,10 +29,9 @@ const registerUser = async (req, res, next) => {
         password: hashedPassword
     });
 
-
     const token = user.generateAuthToken();
 
-    res.status(200).json({ token, user });
+    return res.status(200).json({ token, user });
 };
 
 const loginUser = async (req, res, next) => {
@@ -62,7 +61,7 @@ const loginUser = async (req, res, next) => {
 }
 
 const getUserProfile = async (req, res, next) => {
-    res.status(200).json(req.user);
+    return res.status(200).json(req.user);
 }
 
 const logoutUser = async (req, res, next) => {

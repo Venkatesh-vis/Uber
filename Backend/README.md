@@ -353,3 +353,175 @@ This endpoint performs:
 }
 
 ```
+
+# Captain Login
+
+---
+
+## Endpoint
+
+### **POST /captain/login**
+
+---
+
+## Description
+
+Authenticates a captain using email and password.  
+Validates input, checks stored hashed password, and returns a JWT token along with captain details.
+
+---
+
+## Request Body (JSON)
+
+### **email**
+- **Description:** Captain’s registered email
+- **Type:** String
+- **Required:** Yes
+- **Validation:** Must be a valid email
+
+---
+
+### **password**
+- **Description:** Captain’s password
+- **Type:** String
+- **Required:** Yes
+- **Validation:** Minimum 6 characters
+
+---
+
+## Example Request Body
+
+```json
+{
+  "email": "rahul.captain@example.com",
+  "password": "securepass123"
+}
+```
+
+---
+
+## Success Response (JSON)
+
+```json
+{
+  "token": "jwt-token-here",
+  "captain": {
+    "_id": "695a12b41ed98c88dfd4413a",
+    "email": "rahul.captain@example.com"
+  }
+}
+```
+
+---
+
+## Possible Errors
+
+### **400 Invalid Credentials**
+
+```json
+{
+  "message": "Invalid mail or password"
+}
+```
+
+### **400 Bad Request – Validation Error**
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid Email",
+      "param": "email",
+      "location": "body"
+    }
+  ]
+}
+```
+
+---
+
+# Captain Profile
+
+---
+
+## Endpoint
+
+### **POST /captain/profile**
+
+---
+
+## Description
+
+Retrieves the authenticated captain's profile.  
+Requires a valid JWT token supplied via cookies or Authorization header.  
+Token is verified, checked against blacklist, and captain details are returned.
+
+---
+
+## Success Response (JSON)
+
+```json
+{
+  "_id": "695a12b41ed98c88dfd4413a",
+  "fullname": {
+    "firstname": "Rahul",
+    "lastname": "Sharma"
+  },
+  "email": "rahul.captain@example.com",
+  "vehicle": {
+    "color": "Black",
+    "plate": "MH09123456",
+    "capacity": 3,
+    "vehicleType": "car"
+  },
+  "status": "inactive"
+}
+```
+
+---
+
+## Possible Errors
+
+### **401 Unauthorized**
+- No token provided
+- Token blacklisted
+- Invalid token
+- Expired token
+
+---
+
+# Captain Logout
+
+---
+
+## Endpoint
+
+### **POST /captain/logout**
+
+---
+
+## Description
+
+Logs out the captain by clearing the JWT cookie and blacklisting the token so it cannot be reused.
+
+---
+
+## Success Response (JSON)
+
+```json
+{
+  "message": "Logged out"
+}
+```
+
+---
+
+## Possible Errors
+
+### **401 Unauthorized**
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
