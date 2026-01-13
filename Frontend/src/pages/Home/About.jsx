@@ -1,25 +1,17 @@
 import React from "react";
-import { motion, useAnimation } from "framer-motion";
+import { motion } from "framer-motion";
 
 const AboutSection = () => {
-    const controls = useAnimation();
-
     return (
         <section
             id="about"
             className="w-full bg-neutral-50 py-15 px-6 sm:px-20"
         >
             <motion.div
-                initial={{ y: 60, opacity: 0 }}
-                animate={controls}
-                onViewportEnter={() =>
-                    controls.start({
-                        y: 0,
-                        opacity: 1,
-                        transition: { duration: 0.7, ease: "easeOut" },
-                    })
-                }
-                viewport={{ amount: 0.3 }}
+                initial={{ y: 60 }}
+                whileInView={{ y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
                 className="max-w-3xl mx-auto text-center"
             >
                 <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-neutral-900">

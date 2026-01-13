@@ -1,7 +1,7 @@
 import React from "react";
 import {motion} from "framer-motion";
 
-const Welcome = () => {
+const UserWelcome = () => {
     return (
         <motion.div
             initial={{x: -120, opacity: 0}}
@@ -22,4 +22,4 @@ const Welcome = () => {
     );
 };
 
-export default Welcome;
+export default UserWelcome;

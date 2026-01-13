@@ -1,28 +1,56 @@
-import React from "react";
+import { useState } from "react";
 import UberBG from "../../assets/auto_bg.jpg";
 import Navbar from "./Navbar.jsx";
+import UserAuthCard from "./userAuth/UserAuthCard.jsx";
+import AboutSection from "./About.jsx";
 import Services from "./Services.jsx";
 import Footer from "./Footer.jsx";
-import Welcome from "./Welcome.jsx";
-import UserSignupCard from "./UserSignupCard.jsx";
-import AboutSection from "./About.jsx";
+import UserWelcome from "./UserWelcome.jsx";
+import CaptainWelcome from "./CaptainWelcome.jsx";
+import CaptainAuthCard from "./captainAuth/CaptainAuthCard.jsx";
 
 const Home = () => {
+    const [role, setRole] = useState("user");
+
     return (
         <>
-            <div className="relative min-h-screen w-full bg-cover bg-center" style={{ backgroundImage: `url(${UberBG})` }}>
+            <div
+                className="relative min-h-screen w-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${UberBG})` }}
+            >
                 <Navbar />
-                <div
-                    className="min-h-screen flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-10 px-6 sm:px-20 pt-24 sm:pt-28">
-                    <div className="w-full text-center sm:text-left">
-                        <Welcome />
+                <div className="min-h-screen flex flex-col sm:flex-row items-center justify-between gap-10 px-6 sm:px-20 pt-24 sm:pt-28">
+                    <div className="w-full sm:w-1/2 text-center sm:text-left space-y-6">
+                        <div className="inline-grid grid-cols-2 bg-white rounded-xl p-1.5">
+                            <button
+                                onClick={() => setRole("user")}
+                                className={`px-8 py-3 rounded-lg text-base font-medium cursor-pointer transition ${
+                                    role === "user"
+                                        ? "bg-black text-white"
+                                        : "text-black"
+                                }`}
+                            >
+                                User
+                            </button>
+                            <button
+                                onClick={() => setRole("captain")}
+                                className={`px-8 py-3 rounded-lg text-base font-medium cursor-pointer transition ${
+                                    role === "captain"
+                                        ? "bg-black text-white"
+                                        : "text-black"
+                                }`}
+                            >
+                                Captain
+                            </button>
+                        </div>
+                        {role === "user" ? <UserWelcome /> : <CaptainWelcome />}
                     </div>
-                    <div className="w-full flex justify-center sm:justify-end">
-                        <UserSignupCard />
+                    <div className="w-full sm:w-1/2 flex justify-center sm:justify-end">
+                        {role === "user" ? <UserAuthCard /> : <CaptainAuthCard />}
                     </div>
                 </div>
             </div>
-            <AboutSection/>
+            <AboutSection />
             <Services />
             <Footer />
         </>
