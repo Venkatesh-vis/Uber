@@ -1,53 +1,66 @@
-const userModel = require("../models/user.model");
-const blacklistTokenModel = require("../models/blacklistToken.model");
-const captainModel = require("../models/captain.model");
 const jwt = require("jsonwebtoken");
 
-const authUser = async (req, res, next) => {
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({message:"No token provided"})
-    }
+const userModel = require("../models/user.model");
+const captainModel = require("../models/captain.model");
 
-    const isBlackListed = await blacklistTokenModel.findOne({token: token})
+const auth = (allowedRoles = []) => {
+    return async (req, res, next) => {
+        try {
+            const token =
+                req.cookies?.token ||
+                req.headers.authorization?.split(" ")[1];
 
-    if (isBlackListed) {
-        return res.status(401).json({message:"unAuthorized"})
-    }
+            if (!token) {
+                return res.status(401).json({ message: "No token provided" });
+            }
 
-    try {
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-        const user = await userModel.findById(decodedToken._id)
-        req.user = user;
-        return next();
-    }
-    catch (error) {
-        return res.status(401).json({message:"Unauthorized"})
-    }
-}
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-const authCaptain = async (req, res, next) => {
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+            req.auth = {
+                id: decoded._id,
+                role: decoded.role,
+                adminRole: decoded.adminRole,
+            };
 
-    if (!token) {
-        return res.status(401).json({message:"Unauthorized"})
-    }
+            // role-level authorization
+            if (
+                allowedRoles.length > 0 &&
+                !allowedRoles.includes(decoded.role)
+            ) {
+                return res.status(403).json({ message: "Forbidden" });
+            }
 
-    const isBlackListed = await blacklistTokenModel.findOne({token: token})
+            // load account
+            if (decoded.role === "user") {
+                const user = await userModel.findById(decoded._id).exec();
+                if (!user) {
+                    return res.status(401).json({ message: "User not found" });
+                }
+                req.user = user;
+            }
 
-    if (isBlackListed) {
-        return res.status(401).json({message:"unauthorized"})
-    }
+            if (decoded.role === "captain") {
+                const captain = await captainModel.findById(decoded._id).exec();
+                if (!captain) {
+                    return res.status(401).json({ message: "Captain not found" });
+                }
+                req.captain = captain;
+            }
 
-    try {
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-        const captain = await captainModel.findById(decodedToken._id)
-        req.captain = captain;
-        return next();
-    }
-    catch (error) {
-        return res.status(401).json({message:"Unauthorized"})
-    }
-}
+            if (decoded.role === "admin") {
+                const admin = await adminModel.findById(decoded._id).exec();
+                if (!admin || admin.status !== "active") {
+                    return res.status(401).json({ message: "Admin access disabled" });
+                }
+                req.admin = admin;
+            }
 
-module.exports = {authUser, authCaptain}
+            next();
+        } catch (err) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+    };
+};
+
+
+module.exports = {auth};
