@@ -22,7 +22,6 @@ const auth = (allowedRoles = []) => {
                 adminRole: decoded.adminRole,
             };
 
-            // role-level authorization
             if (
                 allowedRoles.length > 0 &&
                 !allowedRoles.includes(decoded.role)
@@ -30,7 +29,6 @@ const auth = (allowedRoles = []) => {
                 return res.status(403).json({ message: "Forbidden" });
             }
 
-            // load account
             if (decoded.role === "user") {
                 const user = await userModel.findById(decoded._id).exec();
                 if (!user) {
@@ -45,14 +43,6 @@ const auth = (allowedRoles = []) => {
                     return res.status(401).json({ message: "Captain not found" });
                 }
                 req.captain = captain;
-            }
-
-            if (decoded.role === "admin") {
-                const admin = await adminModel.findById(decoded._id).exec();
-                if (!admin || admin.status !== "active") {
-                    return res.status(401).json({ message: "Admin access disabled" });
-                }
-                req.admin = admin;
             }
 
             next();
