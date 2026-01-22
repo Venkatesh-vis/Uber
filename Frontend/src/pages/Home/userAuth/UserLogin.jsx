@@ -1,10 +1,19 @@
-import { useState } from "react";
+import {useContext, useState} from "react";
+import {userLogin} from "../../../api/user/user-api.js";
+import {USER_SIGNIN_ACTION_TYPES} from "../../../reducers/userReducer.js";
+import {useDispatch} from "react-redux";
+import {SHARED_ACTION_TYPES} from "../../../reducers/sharedReducer.js";
+import {AuthContext} from "../../ProtectedRoute/AuthProvider.jsx";
+
 
 const UserLogin = ({ onSwitch }) => {
+    const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({
         email: "",
         password: "",
     });
+    const dispatch = useDispatch();
+    const auth = useContext(AuthContext);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -13,6 +22,19 @@ const UserLogin = ({ onSwitch }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setLoading(true)
+        const successFunction = (res) => {
+            dispatch({type: USER_SIGNIN_ACTION_TYPES.SET_USER, payload: res.user});
+            setLoading(false);
+            auth.checkAuth();
+        }
+
+        const failureFunction = (err) => {
+            setLoading(false)
+            dispatch({type: SHARED_ACTION_TYPES.SET_MESSAGE, payload: err?.data?.message || 'Signup failed'});
+            console.error("Login failed:", err?.data?.message);
+        }
+        userLogin(successFunction, failureFunction, form);
         console.log("Login payload:", form);
     };
 
@@ -43,8 +65,15 @@ const UserLogin = ({ onSwitch }) => {
                     className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                 />
 
-                <button className="w-full py-3 cursor-pointer bg-black text-white rounded-lg">
-                    Log in
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full py-3 rounded-lg bg-black text-white flex items-center justify-center transition ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}>
+                    {loading ? (
+                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                    ) : (
+                        "Log in"
+                    )}
                 </button>
             </form>
 

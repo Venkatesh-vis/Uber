@@ -1,12 +1,20 @@
-import { useState } from "react";
+import {useContext, useState} from "react";
+import {userSignUp} from "../../../api/user/user-api.js";
+import {useDispatch} from "react-redux";
+import {SHARED_ACTION_TYPES} from "../../../reducers/sharedReducer.js";
+import {USER_SIGNIN_ACTION_TYPES} from "../../../reducers/userReducer.js";
+import {AuthContext} from "../../ProtectedRoute/AuthProvider.jsx";
 
 const UserSignup = ({ onSwitch }) => {
+    const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({
         firstName: "",
         lastName: "",
         email: "",
         password: "",
     });
+    const dispatch = useDispatch();
+    const auth = useContext(AuthContext);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -15,7 +23,29 @@ const UserSignup = ({ onSwitch }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Signup payload:", form);
+        setLoading(true)
+        const { firstName, lastName, email, password } = form;
+        const payload = {
+            fullname: {
+                firstname: firstName,
+                lastname: lastName,
+            },
+            email,
+            password,
+        };
+
+        const successFunction = (res) => {
+            dispatch({type: USER_SIGNIN_ACTION_TYPES.SET_USER, payload: res.user});
+            setLoading(false);
+            auth.checkAuth();
+        }
+
+        const failureFunction = (err) => {
+            setLoading(false)
+            dispatch({type: SHARED_ACTION_TYPES.SET_MESSAGE, payload: err?.data?.message || 'Signup failed'});
+            console.error("Signup failed:", err?.data?.message);
+        }
+        userSignUp(successFunction, failureFunction, payload);
     };
 
     return (
@@ -63,9 +93,25 @@ const UserSignup = ({ onSwitch }) => {
                     className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                 />
 
-                <button className="w-full cursor-pointer py-3 bg-black text-white rounded-lg">
-                    Sign up
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className={`
+    w-full py-3 rounded-lg
+    bg-black text-white
+    flex items-center justify-center
+    transition
+    ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}
+  `}
+                >
+                    {loading ? (
+                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                    ) : (
+                        "Sign up"
+                    )}
                 </button>
+
+
             </form>
 
             <p className="text-sm mt-4 text-center">

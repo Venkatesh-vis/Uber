@@ -1,8 +1,9 @@
-export const isAuthenticated = () => {
-    return Boolean(localStorage.getItem("token"));
-};
+export const API_BASE_URL =
+    import.meta.env.VITE_BASE_URL || "deployed link here";
 
-
-export const isAdmin = () => {
-    return Boolean(localStorage.getItem("Admin"));
+export const REQUEST_METHOD = {
+    POST: "POST",
+    GET: "GET",
+    DELETE: "DELETE",
+    PUT: "PUT"
 };

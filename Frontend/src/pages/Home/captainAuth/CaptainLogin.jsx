@@ -1,10 +1,18 @@
-import { useState } from "react";
+import {useContext, useState} from "react";
+import {AuthContext} from "../../ProtectedRoute/AuthProvider.jsx";
+import {captainLogin} from "../../../api/captain/captain-api.js";
+import {SHARED_ACTION_TYPES} from "../../../reducers/sharedReducer.js";
+import {CAPTAIN_SIGNIN_ACTION_TYPES} from "../../../reducers/captainReducer.js";
+import {useDispatch} from "react-redux";
 
 const CaptainLogin = ({ onSwitch }) => {
+    const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({
         email: "",
         password: "",
     });
+    const dispatch = useDispatch();
+    const auth = useContext(AuthContext);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -13,6 +21,21 @@ const CaptainLogin = ({ onSwitch }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setLoading(true)
+
+        const successFunction = (res) => {
+            dispatch({type: CAPTAIN_SIGNIN_ACTION_TYPES.SET_CAPTAIN, payload: res.captain});
+            setLoading(false);
+            auth.checkAuth();
+        }
+
+        const failureFunction = (err) => {
+            setLoading(false);
+            dispatch({type: SHARED_ACTION_TYPES.SET_MESSAGE, payload: err?.data?.message || 'Signup failed'});
+            console.error("Captain signup failed:", err);
+        }
+        captainLogin(successFunction, failureFunction, form);
+        auth.checkAuth();
         console.log("Captain login payload:", form);
     };
 
@@ -43,8 +66,15 @@ const CaptainLogin = ({ onSwitch }) => {
                     className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                 />
 
-                <button className="w-full py-3 cursor-pointer bg-black text-white rounded-lg">
-                    Log in
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full py-3 rounded-lg bg-black text-white flex items-center justify-center transition ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}>
+                    {loading ? (
+                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                    ) : (
+                        "Log in"
+                    )}
                 </button>
             </form>
 

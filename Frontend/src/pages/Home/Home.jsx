@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useContext, useEffect, useState} from "react";
 import UberBG from "../../assets/auto_bg.jpg";
 import Navbar from "./Navbar.jsx";
 import UserAuthCard from "./userAuth/UserAuthCard.jsx";
@@ -8,9 +8,23 @@ import Footer from "./Footer.jsx";
 import UserWelcome from "./UserWelcome.jsx";
 import CaptainWelcome from "./CaptainWelcome.jsx";
 import CaptainAuthCard from "./captainAuth/CaptainAuthCard.jsx";
+import {AuthContext} from "../ProtectedRoute/AuthProvider.jsx";
+import {useNavigate} from "react-router-dom";
 
 const Home = () => {
     const [role, setRole] = useState("user");
+    const auth = useContext(AuthContext);
+    const navigate = useNavigate();
+    const { user, loading } = auth;
+    useEffect(() => {
+        if (loading) return;
+        if (user?.role === "user") {
+            navigate("/user-dashboard", { replace: true });
+        }
+        if (user?.role === "captain") {
+            navigate("/captain-dashboard", { replace: true });
+        }
+    }, [user]);
 
     return (
         <>

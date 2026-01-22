@@ -1,6 +1,12 @@
-import { useState } from "react";
+import {useContext, useState} from "react";
+import {captainSignUp} from "../../../api/captain/captain-api.js";
+import {useDispatch} from "react-redux";
+import {CAPTAIN_SIGNIN_ACTION_TYPES} from "../../../reducers/captainReducer.js";
+import {SHARED_ACTION_TYPES} from "../../../reducers/sharedReducer.js";
+import {AuthContext} from "../../ProtectedRoute/AuthProvider.jsx";
 
 const CaptainSignup = ({ onSwitch }) => {
+    const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({
         firstname: "",
         lastname: "",
@@ -11,6 +17,8 @@ const CaptainSignup = ({ onSwitch }) => {
         capacity: "",
         vehicleType: "",
     });
+    const dispatch = useDispatch();
+    const auth = useContext(AuthContext);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -19,6 +27,7 @@ const CaptainSignup = ({ onSwitch }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setLoading(true);
 
         const payload = {
             fullname: {
@@ -34,6 +43,20 @@ const CaptainSignup = ({ onSwitch }) => {
                 vehicleType: form.vehicleType,
             },
         };
+
+        const successFunction = (res) => {
+            dispatch({type: CAPTAIN_SIGNIN_ACTION_TYPES.SET_CAPTAIN, payload: res.captain});
+            setLoading(false);
+            auth.checkAuth();
+        }
+
+        const failureFunction = (err) => {
+            setLoading(false)
+            dispatch({type: SHARED_ACTION_TYPES.SET_MESSAGE, payload: err?.data?.message || 'Signup failed'});
+            console.error("Captain signup failed:", err);
+        }
+
+        captainSignUp(successFunction, failureFunction, payload);
 
         console.log("Captain signup payload:", payload);
     };
@@ -84,14 +107,21 @@ const CaptainSignup = ({ onSwitch }) => {
                     className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                 />
 
-                <input
+                <select
                     name="vehicleType"
-                    placeholder="Vehicle type (car / bike / auto)"
                     value={form.vehicleType}
                     onChange={handleChange}
                     required
                     className="w-full p-3 bg-transparent outline-none border-b border-white/40"
-                />
+                >
+                    <option value="" disabled>
+                        Select vehicle type
+                    </option>
+                    <option value="car">Car</option>
+                    <option value="motorcycle">Motorcycle</option>
+                    <option value="auto">Auto</option>
+                </select>
+
 
                 <input
                     name="color"
@@ -121,8 +151,22 @@ const CaptainSignup = ({ onSwitch }) => {
                     className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                 />
 
-                <button className="w-full py-3 cursor-pointer bg-black text-white rounded-lg">
-                    Sign up
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className={`
+    w-full py-3 rounded-lg
+    bg-black text-white
+    flex items-center justify-center
+    transition
+    ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}
+  `}
+                >
+                    {loading ? (
+                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                    ) : (
+                        "Sign up"
+                    )}
                 </button>
             </form>
 
