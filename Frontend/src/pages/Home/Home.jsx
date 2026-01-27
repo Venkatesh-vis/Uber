@@ -60,7 +60,7 @@ const Home = () => {
                         {role === "user" ? <UserWelcome /> : <CaptainWelcome />}
                     </div>
                     <div className="w-full sm:w-1/2 flex justify-center sm:justify-end">
-                        {role === "user" ? <UserAuthCard /> : <CaptainAuthCard />}
+                    {role === "user" ? <UserAuthCard /> : <CaptainAuthCard />}
                     </div>
                 </div>
             </div>

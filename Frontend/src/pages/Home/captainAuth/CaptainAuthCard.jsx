@@ -8,6 +8,7 @@ const CaptainAuthCard = () => {
 
     return (
         <motion.div
+            className="w-full flex justify-center"
             initial={{ x: 120, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -120, opacity: 0 }}

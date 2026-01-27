@@ -1,12 +1,15 @@
-import {useContext, useState} from "react";
-import {captainSignUp} from "../../../api/captain/captain-api.js";
-import {useDispatch} from "react-redux";
-import {CAPTAIN_SIGNIN_ACTION_TYPES} from "../../../reducers/captainReducer.js";
-import {SHARED_ACTION_TYPES} from "../../../reducers/sharedReducer.js";
-import {AuthContext} from "../../ProtectedRoute/AuthProvider.jsx";
+import { useContext, useState } from "react";
+import { captainSignUp } from "../../../api/captain/captain-api.js";
+import { useDispatch } from "react-redux";
+import { CAPTAIN_SIGNIN_ACTION_TYPES } from "../../../reducers/captainReducer.js";
+import { SHARED_ACTION_TYPES } from "../../../reducers/sharedReducer.js";
+import { AuthContext } from "../../ProtectedRoute/AuthProvider.jsx";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const CaptainSignup = ({ onSwitch }) => {
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
     const [form, setForm] = useState({
         firstname: "",
         lastname: "",
@@ -17,6 +20,7 @@ const CaptainSignup = ({ onSwitch }) => {
         capacity: "",
         vehicleType: "",
     });
+
     const dispatch = useDispatch();
     const auth = useContext(AuthContext);
 
@@ -45,141 +49,159 @@ const CaptainSignup = ({ onSwitch }) => {
         };
 
         const successFunction = (res) => {
-            dispatch({type: CAPTAIN_SIGNIN_ACTION_TYPES.SET_CAPTAIN, payload: res.captain});
+            dispatch({
+                type: CAPTAIN_SIGNIN_ACTION_TYPES.SET_CAPTAIN,
+                payload: res.captain,
+            });
             setLoading(false);
             auth.checkAuth();
-        }
+        };
 
         const failureFunction = (err) => {
-            setLoading(false)
-            dispatch({type: SHARED_ACTION_TYPES.SET_MESSAGE, payload: err?.data?.message || 'Signup failed'});
+            setLoading(false);
+            dispatch({
+                type: SHARED_ACTION_TYPES.SET_MESSAGE,
+                payload: err?.data?.message || "Signup failed",
+            });
             console.error("Captain signup failed:", err);
-        }
+        };
 
         captainSignUp(successFunction, failureFunction, payload);
-
-        console.log("Captain signup payload:", payload);
     };
 
     return (
-        <div className="w-full max-w-sm bg-white/30 backdrop-blur-lg p-6 rounded-xl">
-            <h2 className="text-xl font-bold mb-6">
-                Become a Captain
-            </h2>
+        <div className="w-full px-4 sm:px-0 flex justify-center">
+            <div className="bg-white/30 backdrop-blur-lg p-6 sm:p-8 rounded-xl max-w-sm sm:max-w-md lg:max-w-lg w-full">
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex gap-3">
+            <h2 className="text-xl font-bold mb-6 text-center sm:text-left">
+                    Become a Captain
+                </h2>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <input
+                            name="firstname"
+                            placeholder="First name"
+                            value={form.firstname}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-3 bg-transparent outline-none border-b border-white/40"
+                        />
+                        <input
+                            name="lastname"
+                            placeholder="Last name"
+                            value={form.lastname}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-3 bg-transparent outline-none border-b border-white/40"
+                        />
+                    </div>
+
                     <input
-                        name="firstname"
-                        placeholder="First name"
-                        value={form.firstname}
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                        value={form.email}
                         onChange={handleChange}
                         required
                         className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                     />
+
+                    {/* Password Field */}
+                    <div className="relative w-full">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            placeholder="Password"
+                            value={form.password}
+                            onChange={handleChange}
+                            required
+                            className="w-full p-3 pr-10 bg-transparent outline-none border-b border-white/40"
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(prev => !prev)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-black hover:text-black/70 cursor-pointer"
+                            aria-label="Toggle password visibility"
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                    </div>
+
+                    <select
+                        name="vehicleType"
+                        value={form.vehicleType}
+                        onChange={handleChange}
+                        required
+                        className="w-full p-3 bg-transparent outline-none border-b border-white/40"
+                    >
+                        <option value="" disabled>
+                            Select vehicle type
+                        </option>
+                        <option value="car">Car</option>
+                        <option value="motorcycle">Motorcycle</option>
+                        <option value="auto">Auto</option>
+                    </select>
+
                     <input
-                        name="lastname"
-                        placeholder="Last name"
-                        value={form.lastname}
+                        name="color"
+                        placeholder="Vehicle color"
+                        value={form.color}
                         onChange={handleChange}
                         required
                         className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                     />
-                </div>
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 bg-transparent outline-none border-b border-white/40"
-                />
+                    <input
+                        name="plate"
+                        placeholder="Vehicle plate number"
+                        value={form.plate}
+                        onChange={handleChange}
+                        required
+                        className="w-full p-3 bg-transparent outline-none border-b border-white/40"
+                    />
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 bg-transparent outline-none border-b border-white/40"
-                />
+                    <input
+                        type="number"
+                        name="capacity"
+                        placeholder="Vehicle capacity"
+                        value={form.capacity}
+                        onChange={handleChange}
+                        required
+                        className="w-full p-3 bg-transparent outline-none border-b border-white/40"
+                    />
 
-                <select
-                    name="vehicleType"
-                    value={form.vehicleType}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 bg-transparent outline-none border-b border-white/40"
-                >
-                    <option value="" disabled>
-                        Select vehicle type
-                    </option>
-                    <option value="car">Car</option>
-                    <option value="motorcycle">Motorcycle</option>
-                    <option value="auto">Auto</option>
-                </select>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className={`
+                            w-full py-3 rounded-lg
+                            bg-black text-white
+                            flex items-center justify-center
+                            transition
+                            ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}
+                        `}
+                    >
+                        {loading ? (
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                        ) : (
+                            "Sign up"
+                        )}
+                    </button>
+                </form>
 
-
-                <input
-                    name="color"
-                    placeholder="Vehicle color"
-                    value={form.color}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 bg-transparent outline-none border-b border-white/40"
-                />
-
-                <input
-                    name="plate"
-                    placeholder="Vehicle plate number"
-                    value={form.plate}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 bg-transparent outline-none border-b border-white/40"
-                />
-
-                <input
-                    type="number"
-                    name="capacity"
-                    placeholder="Vehicle capacity"
-                    value={form.capacity}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 bg-transparent outline-none border-b border-white/40"
-                />
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className={`
-    w-full py-3 rounded-lg
-    bg-black text-white
-    flex items-center justify-center
-    transition
-    ${loading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}
-  `}
-                >
-                    {loading ? (
-                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                    ) : (
-                        "Sign up"
-                    )}
-                </button>
-            </form>
-
-            <p className="text-sm mt-4 text-center">
-                Already registered?{" "}
-                <button
-                    type="button"
-                    onClick={onSwitch}
-                    className="font-semibold cursor-pointer underline"
-                >
-                    Log in
-                </button>
-            </p>
+                <p className="text-sm mt-4 text-center">
+                    Already registered?{" "}
+                    <button
+                        type="button"
+                        onClick={onSwitch}
+                        className="font-semibold cursor-pointer underline"
+                    >
+                        Log in
+                    </button>
+                </p>
+            </div>
         </div>
     );
 };

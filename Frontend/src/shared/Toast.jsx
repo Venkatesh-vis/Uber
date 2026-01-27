@@ -35,27 +35,30 @@ const Toast = () => {
     if (!message) return null;
 
     return (
-        <div className="fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2 px-4 pointer-events-none">
+        <div className="fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2 w-full px-3 pointer-events-none">
             <div
                 className={`
-          inline-flex items-center justify-center
-          bg-black text-white
-          px-5 py-3
-          rounded-full
-          text-sm font-medium
-          shadow-lg
-          transition-all duration-300 ease-in-out
-          ${show
+                mx-auto
+                bg-black text-white
+                px-4 py-2
+                rounded-full
+                text-sm font-medium
+                leading-snug
+                shadow-lg
+                w-full sm:w-auto
+                max-w-[100%] sm:max-w-[420px]
+                text-center
+                transition-all duration-300 ease-in-out
+                ${show
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-3"}
-        `}
+            `}
             >
-        <span className="whitespace-pre-wrap break-words max-w-[90vw] text-center">
-          {message}
-        </span>
+                {message}
             </div>
         </div>
     );
+
 };
 
 export default Toast;
