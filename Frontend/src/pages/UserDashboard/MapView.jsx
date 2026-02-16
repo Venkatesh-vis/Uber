@@ -1,70 +1,148 @@
-import { useEffect, useRef } from "react";
-import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
-import { GOOGLE_MAPS_API_KEY } from "../../constants";
+import { useEffect, useState } from "react";
+import {
+    MapContainer,
+    TileLayer,
+    Marker,
+    Polyline,
+    useMap
+} from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import {useSelector} from "react-redux";
 
-const DEFAULT_CENTER = { lat: 17.385044, lng: 78.486671 };
+const FALLBACK_CENTER = [17.385044, 78.486671];
 
-const MapView = ({ trip }) => {
-    const mapRef = useRef(null);
-    const map = useRef(null);
-    const directionsRenderer = useRef(null);
-    const directionsService = useRef(null);
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
+
+// 🔹 Auto-fit map to route bounds
+function FitBounds({ route }) {
+    const map = useMap();
 
     useEffect(() => {
-        let cancelled = false;
+        if (!route || route.length === 0) return;
 
-        async function initMap() {
-            setOptions({
-                apiKey: GOOGLE_MAPS_API_KEY,
-                version: "weekly",
-            });
+        const bounds = L.latLngBounds(route);
+        map.flyToBounds(bounds, {
+            padding: [50, 50],
+            duration: 1.5,
+        });
+    }, [route, map]);
 
-            const { Map } = await importLibrary("maps");
-            const { DirectionsRenderer, DirectionsService } =
-                await importLibrary("routes");
+    return null;
+}
 
-            if (cancelled) return;
 
-            map.current = new Map(mapRef.current, {
-                center: DEFAULT_CENTER,
-                zoom: 13,
-                disableDefaultUI: true,
-                zoomControl: true,
-            });
+const MapView = () => {
+    const trip = useSelector(state => state.userRide);
+    const [route, setRoute] = useState([]);
+    const [animatedRoute, setAnimatedRoute] = useState([]);
 
-            directionsRenderer.current = new DirectionsRenderer();
-            directionsService.current = new DirectionsService();
+    const pickup = trip.pickupCoords;
+    const drop = trip.dropCoords;
 
-            directionsRenderer.current.setMap(map.current);
+    // 🔹 Fetch route
+    useEffect(() => {
+        if (!pickup || !drop) {
+            setRoute([]);
+            setAnimatedRoute([]);
+            return;
         }
 
-        initMap();
+        async function fetchRoute() {
+            const url = `https://router.project-osrm.org/route/v1/driving/${pickup[0]},${pickup[1]};${drop[0]},${drop[1]}?overview=full&geometries=geojson`;
 
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+            const res = await fetch(url);
+            const data = await res.json();
 
+            if (!data.routes?.length) return;
+
+            const coordinates =
+                data.routes[0].geometry.coordinates
+                    .map(([lng, lat]) => {
+                        if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng)) {
+                            return null;
+                        }
+
+                        return [lat, lng];
+                    })
+                    .filter(Boolean);
+
+
+            setRoute(coordinates);
+        }
+
+        fetchRoute();
+    }, [pickup, drop]);
+
+    // 🔹 Animate route drawing
     useEffect(() => {
-        if (!trip.searched || !trip.pickup || !trip.drop) return;
-        if (!directionsService.current) return;
+        if (!route.length) return;
 
-        directionsService.current.route(
-            {
-                origin: trip.pickup,
-                destination: trip.drop,
-                travelMode: "DRIVING",
-            },
-            (result, status) => {
-                if (status === "OK") {
-                    directionsRenderer.current.setDirections(result);
-                }
+        let index = 0;
+
+        const interval = setInterval(() => {
+            index += 8; // controls animation speed
+
+            if (index >= route.length) {
+                setAnimatedRoute(route);
+                clearInterval(interval);
+                return;
             }
-        );
-    }, [trip.searched, trip.pickup, trip.drop]);
 
-    return <div ref={mapRef} className="w-full h-full" />;
+            setAnimatedRoute(route.slice(0, index));
+        }, 16); // ~60fps
+
+        return () => clearInterval(interval);
+    }, [route]);
+
+
+    const center =
+        pickup
+            ? [pickup[1], pickup[0]]
+            : trip.userLocation || FALLBACK_CENTER;
+
+    return (
+        <MapContainer
+            center={center}
+            zoom={13}
+            className="w-full h-full"
+        >
+            <TileLayer
+                attribution="© OpenStreetMap contributors"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+            <FitBounds route={route} />
+
+            {trip.userLocation && !pickup && (
+                <Marker position={trip.userLocation} />
+            )}
+
+            {pickup && (
+                <Marker position={[pickup[1], pickup[0]]} />
+            )}
+
+            {drop && (
+                <Marker position={[drop[1], drop[0]]} />
+            )}
+
+            {animatedRoute.length > 0 && (
+                <Polyline
+                    positions={animatedRoute}
+                    pathOptions={{ color: "blue", weight: 6 }}
+                />
+            )}
+        </MapContainer>
+    );
 };
 
 export default MapView;

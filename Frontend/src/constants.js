@@ -1,8 +1,7 @@
 export const API_BASE_URL =
     import.meta.env.VITE_BASE_URL || "deployed link here";
 
-export const GOOGLE_MAPS_API_KEY =
-    import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 export const REQUEST_METHOD = {
     POST: "POST",
@@ -10,3 +9,4 @@ export const REQUEST_METHOD = {
     DELETE: "DELETE",
     PUT: "PUT"
 };
+

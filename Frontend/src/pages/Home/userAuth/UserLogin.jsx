@@ -46,7 +46,6 @@ const UserLogin = ({ onSwitch }) => {
         };
 
         userLogin(successFunction, failureFunction, form);
-        console.log("Login payload:", form);
     };
 
     return (

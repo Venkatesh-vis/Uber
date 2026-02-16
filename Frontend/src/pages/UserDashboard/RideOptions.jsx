@@ -1,3 +1,5 @@
+import { useSelector, useDispatch } from "react-redux";
+import { USER_RIDE_ACTION_TYPES } from "../../reducers/userRideReducer.js";
 import bike from "../../assets/bike_ride.webp";
 import auto from "../../assets/auto_ride.webp";
 import car from "../../assets/car_ride.png";
@@ -37,22 +39,28 @@ export const DUMMY_RIDES = [
     },
 ];
 
-const RideOptions = ({ selectedRide, onSelectRide }) => {
+const RideOptions = () => {
+    const dispatch = useDispatch();
+    const selectedRide = useSelector(state => state.userRide.selectedRide);
+
     return (
         <div className="flex flex-col h-full">
-            {/* Ride list */}
             <div className="flex-1 overflow-y-auto space-y-3 px-4">
                 {DUMMY_RIDES.map((ride) => (
                     <RideOptionCard
                         key={ride.id}
                         ride={ride}
                         selected={selectedRide?.id === ride.id}
-                        onClick={() => onSelectRide(ride)}
+                        onClick={() =>
+                            dispatch({
+                                type: USER_RIDE_ACTION_TYPES.SET_SELECTED_RIDE,
+                                payload: ride,
+                            })
+                        }
                     />
                 ))}
             </div>
 
-            {/* Bottom payment bar */}
             {selectedRide && <PaymentBar ride={selectedRide} />}
         </div>
     );
