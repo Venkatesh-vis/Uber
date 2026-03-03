@@ -5,64 +5,79 @@ import auto from "../../assets/auto_ride.webp";
 import car from "../../assets/car_ride.png";
 import RideOptionCard from "./RideOptionCard";
 import PaymentBar from "./PaymentBar";
+import Loader from "../../shared/Loader.jsx";
 
-export const DUMMY_RIDES = [
-    {
-        id: "bike",
+const VEHICLE_META = {
+    motorcycle: {
+        id: "motorcycle",
         name: "Bike Saver",
         image: bike,
-        time: "1 min away",
         subtitle: "Faster",
-        discount: "50% off",
-        price: 25.39,
-        originalPrice: 50.39,
     },
-    {
+    auto: {
         id: "auto",
         name: "Auto",
         image: auto,
-        time: "1 min away",
-        subtitle: "Pay directly to driver, cash/UPI only",
-        discount: "60% off",
-        price: 30.30,
-        originalPrice: 60.30,
+        subtitle: "Cash/UPI only",
     },
-    {
-        id: "go",
+    car: {
+        id: "car",
         name: "Uber Go",
         image: car,
-        time: "2 mins away",
         subtitle: "Affordable compact AC rides",
-        discount: "60% off",
-        price: 57.86,
-        originalPrice: 144.65,
     },
-];
+};
 
 const RideOptions = () => {
     const dispatch = useDispatch();
+    const rideOptions = useSelector(state => state.userRide.rideOptions);
     const selectedRide = useSelector(state => state.userRide.selectedRide);
+    const loading = useSelector(state => state.userRide.loading);
+
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto space-y-3 px-4">
-                {DUMMY_RIDES.map((ride) => (
-                    <RideOptionCard
-                        key={ride.id}
-                        ride={ride}
-                        selected={selectedRide?.id === ride.id}
-                        onClick={() =>
-                            dispatch({
-                                type: USER_RIDE_ACTION_TYPES.SET_SELECTED_RIDE,
-                                payload: ride,
-                            })
-                        }
-                    />
-                ))}
-            </div>
+        <>
+            {loading ? <Loader/> : <div className="flex flex-col h-full">
+                <div className="flex-1 overflow-y-auto space-y-3 px-4">
 
-            {selectedRide && <PaymentBar ride={selectedRide} />}
-        </div>
+                    {rideOptions.map((ride) => {
+
+                        const meta = VEHICLE_META[ride.vehicleType];
+                        if (!meta) return null;
+
+                        const mergedRide = {
+                            id: meta.id,
+                            name: meta.name,
+                            image: meta.image,
+                            subtitle: meta.subtitle,
+                            discount: `${ride.discountPercent}% off`,
+                            price: ride.finalFare,
+                            originalPrice: ride.originalFare,
+                            distance: ride.distance,
+                            duration: ride.duration,
+                            vehicleType: ride.vehicleType,
+                        };
+
+                        return (
+                            <RideOptionCard
+                                key={meta.id}
+                                ride={mergedRide}
+                                selected={selectedRide?.vehicleType === ride.vehicleType}
+                                onClick={() =>
+                                    dispatch({
+                                        type: USER_RIDE_ACTION_TYPES.SET_SELECTED_RIDE,
+                                        payload: mergedRide,
+                                    })
+                                }
+                            />
+                        );
+                    })}
+                </div>
+
+                {selectedRide && <PaymentBar ride={selectedRide} />}
+            </div>}
+        </>
+
     );
 };
 

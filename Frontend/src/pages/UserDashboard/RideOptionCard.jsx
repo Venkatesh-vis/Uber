@@ -35,10 +35,10 @@ const RideOptionCard = ({ ride, selected, onClick }) => {
                     {ride.discount}
                 </div>
                 <div className="text-lg font-semibold">
-                    ₹{ride.price.toFixed(2)}
+                    ₹{ride.price}
                 </div>
                 <div className="text-sm text-gray-400 line-through">
-                    ₹{ride.originalPrice.toFixed(2)}
+                    ₹{ride.originalPrice}
                 </div>
             </div>
         </div>

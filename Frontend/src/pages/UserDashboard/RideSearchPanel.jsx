@@ -2,7 +2,7 @@ import {useDispatch, useSelector} from "react-redux";
 import LocationInputs from "./LocationInputs";
 import {SHARED_ACTION_TYPES} from "../../reducers/sharedReducer.js";
 import {USER_RIDE_ACTION_TYPES} from "../../reducers/userRideReducer.js";
-import {DUMMY_RIDES} from "./RideOptions.jsx";
+import {fareDetails} from "../../api/user/user-api.js";
 
 const RideSearchPanel = () => {
     const trip = useSelector(state => state.userRide);
@@ -18,13 +18,45 @@ const RideSearchPanel = () => {
         }
 
         dispatch({
-            type: USER_RIDE_ACTION_TYPES.SET_SEARCHED,
+            type: USER_RIDE_ACTION_TYPES.SET_LOADING,
             payload: true,
-        });
+        })
+
+        const successFunction = (response) => {
+            dispatch({
+                type: USER_RIDE_ACTION_TYPES.SET_LOADING,
+                payload: false,
+            })
+            dispatch({
+                type: USER_RIDE_ACTION_TYPES.SET_RIDE_OPTIONS,
+                payload: response.rideOptions,
+            })
+        }
+
+        const errorFunction = (error) => {
+            dispatch({
+                type: USER_RIDE_ACTION_TYPES.SET_RIDE_OPTIONS,
+                payload: null,
+            })
+            console.error(error)
+        }
+
+        const cords = {
+            pickup: {
+                lng: trip.pickupCoords[0],
+                lat: trip.pickupCoords[1],
+            },
+            drop: {
+                lng: trip.dropCoords[0],
+                lat: trip.dropCoords[1],
+            }
+        };
+
+        fareDetails(successFunction, errorFunction, cords);
 
         dispatch({
-            type: USER_RIDE_ACTION_TYPES.SET_SELECTED_RIDE,
-            payload: DUMMY_RIDES[0],
+            type: USER_RIDE_ACTION_TYPES.SET_RIDE_OPTIONS,
+            payload: "",
         });
     };
 

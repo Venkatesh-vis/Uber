@@ -1,5 +1,3 @@
-// utils.js
-
 // Get current city using reverse geocoding
 export const getCurrentCity = async (lat, lon) => {
     const res = await fetch(

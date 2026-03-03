@@ -9,3 +9,7 @@ export const userSignUp = ( successFunction, failureFunction, requestBody  ) => 
 export const userLogin = ( successFunction, failureFunction, requestBody  ) => {
     makeServerRequest("/user/login", REQUEST_METHOD.POST, requestBody, successFunction, failureFunction)
 }
+
+export const fareDetails = ( successFunction, failureFunction, requestBody  ) => {
+    makeServerRequest("/fare", REQUEST_METHOD.POST, requestBody, successFunction, failureFunction)
+}
