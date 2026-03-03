@@ -525,3 +525,451 @@ Logs out the captain by clearing the JWT cookie and blacklisting the token so it
   "message": "Unauthorized"
 }
 ```
+
+# Fare Estimation
+
+---
+
+## Endpoint
+
+**POST /fare**
+
+---
+
+## Description
+
+Calculates fare estimates for all available vehicle types based on the provided pickup and drop coordinates.
+
+The system:
+
+* Validates coordinates
+* Calculates straight-line distance using the Haversine formula
+* Estimates ride duration
+* Applies surge multiplier
+* Applies dynamic discount logic
+* Returns fare breakdown for each vehicle type
+
+This endpoint only provides fare estimates.
+No ride is created at this stage.
+
+---
+
+## Request Body (JSON)
+
+### pickup (object)
+
+* **Type:** Object
+* **Required:** Yes
+* **Description:** Pickup location coordinates
+
+#### pickup.lat
+
+* **Type:** Number
+* **Required:** Yes
+* **Description:** Latitude in degrees
+
+#### pickup.lng
+
+* **Type:** Number
+* **Required:** Yes
+* **Description:** Longitude in degrees
+
+---
+
+### drop (object)
+
+* **Type:** Object
+* **Required:** Yes
+* **Description:** Drop location coordinates
+
+#### drop.lat
+
+* **Type:** Number
+* **Required:** Yes
+* **Description:** Latitude in degrees
+
+#### drop.lng
+
+* **Type:** Number
+* **Required:** Yes
+* **Description:** Longitude in degrees
+
+---
+
+## Example Request Body
+
+```json
+{
+  "pickup": {
+    "lat": 17.4939602,
+    "lng": 78.4008412
+  },
+  "drop": {
+    "lat": 17.4364734,
+    "lng": 78.3735921
+  }
+}
+```
+
+---
+
+## Success Response (200 OK)
+
+```json
+{
+  "surgeMultiplier": "1.15",
+  "rideOptions": [
+    {
+      "vehicleType": "motorcycle",
+      "distance": "8.42 km",
+      "duration": "15 mins",
+      "originalFare": 210.45,
+      "discountPercent": 25,
+      "discountAmount": 52.61,
+      "finalFare": 157.84
+    },
+    {
+      "vehicleType": "auto",
+      "distance": "8.42 km",
+      "duration": "15 mins",
+      "originalFare": 268.90,
+      "discountPercent": 20,
+      "discountAmount": 53.78,
+      "finalFare": 215.12
+    },
+    {
+      "vehicleType": "car",
+      "distance": "8.42 km",
+      "duration": "15 mins",
+      "originalFare": 345.60,
+      "discountPercent": 18,
+      "discountAmount": 62.21,
+      "finalFare": 283.39
+    }
+  ]
+}
+```
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+
+Returned when required fields are missing or invalid.
+
+```json
+{
+  "message": "Pickup and drop locations are required"
+}
+```
+
+or
+
+```json
+{
+  "message": "Invalid pickup or drop coordinates"
+}
+```
+
+---
+
+### 500 Internal Server Error
+
+```json
+{
+  "message": "Internal server error"
+}
+```
+
+---
+
+## Notes
+
+* Distance is calculated using the Haversine formula.
+* Duration is estimated based on average city speed.
+* Fare includes:
+
+  * Base fare
+  * Per kilometer charge
+  * Per minute charge
+  * Surge multiplier
+  * Dynamic discount
+
+# Ride APIs Documentation
+
+---
+
+# Create Ride
+
+---
+
+## Endpoint
+
+**POST /ride/create**
+
+---
+
+## Description
+
+Creates a new ride after the user selects a vehicle type.
+This endpoint:
+
+* Revalidates pickup and drop coordinates
+* Recalculates fare on the backend
+* Creates a ride record with status `pending`
+* Notifies nearby captains
+
+---
+
+## Request Body (JSON)
+
+### userId
+
+* **Type:** String (ObjectId)
+* **Required:** Yes
+* **Description:** ID of the user creating the ride
+
+### vehicleType
+
+* **Type:** String
+* **Required:** Yes
+* **Allowed Values:** `motorcycle`, `auto`, `car`
+
+### pickup
+
+* **Type:** Object
+* **Required:** Yes
+
+#### pickup.lat
+
+* Number (required)
+
+#### pickup.lng
+
+* Number (required)
+
+### drop
+
+* **Type:** Object
+* **Required:** Yes
+
+#### drop.lat
+
+* Number (required)
+
+#### drop.lng
+
+* Number (required)
+
+---
+
+## Example Request
+
+```json
+{
+  "userId": "65fabc1234abcd5678ef9012",
+  "vehicleType": "car",
+  "pickup": {
+    "lat": 17.4939602,
+    "lng": 78.4008412
+  },
+  "drop": {
+    "lat": 17.4364734,
+    "lng": 78.3735921
+  }
+}
+```
+
+---
+
+## Success Response (201 Created)
+
+```json
+{
+  "message": "Ride created successfully",
+  "rideId": "65fabd9876abcd5678ef9013",
+  "status": "pending",
+  "finalFare": 283.39
+}
+```
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+
+```json
+{
+  "message": "Invalid ride details"
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "message": "Internal server error"
+}
+```
+
+---
+
+# Accept Ride
+
+---
+
+## Endpoint
+
+**POST /ride/accept**
+
+---
+
+## Description
+
+Allows a captain to accept a pending ride.
+
+* Only rides with status `pending` can be accepted.
+* Operation is atomic (prevents race condition).
+* Updates ride status to `accepted`.
+* Assigns captain to ride.
+* Notifies user.
+
+---
+
+## Request Body (JSON)
+
+### rideId
+
+* **Type:** String (ObjectId)
+* **Required:** Yes
+
+### captainId
+
+* **Type:** String (ObjectId)
+* **Required:** Yes
+
+---
+
+## Example Request
+
+```json
+{
+  "rideId": "65fabd9876abcd5678ef9013",
+  "captainId": "65facb1111abcd5678ef9022"
+}
+```
+
+---
+
+## Success Response (200 OK)
+
+```json
+{
+  "message": "Ride accepted successfully",
+  "rideId": "65fabd9876abcd5678ef9013",
+  "status": "accepted"
+}
+```
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+
+```json
+{
+  "message": "Ride already accepted or cancelled"
+}
+```
+
+---
+
+# Cancel Ride
+
+---
+
+## Endpoint
+
+**POST /ride/cancel**
+
+---
+
+## Description
+
+Cancels a ride.
+
+* Allowed only if ride status is `pending` or `accepted`
+* Updates ride status to `cancelled`
+* Notifies relevant party (user or captain)
+
+---
+
+## Request Body (JSON)
+
+### rideId
+
+* **Type:** String (ObjectId)
+* **Required:** Yes
+
+### cancelledBy
+
+* **Type:** String
+* **Required:** Yes
+* **Allowed Values:** `user`, `captain`
+
+---
+
+## Example Request
+
+```json
+{
+  "rideId": "65fabd9876abcd5678ef9013",
+  "cancelledBy": "user"
+}
+```
+
+---
+
+## Success Response (200 OK)
+
+```json
+{
+  "message": "Ride cancelled successfully",
+  "rideId": "65fabd9876abcd5678ef9013",
+  "status": "cancelled"
+}
+```
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+
+```json
+{
+  "message": "Ride cannot be cancelled"
+}
+```
+
+---
+
+# Ride Lifecycle
+
+```
+pending  →  accepted  →  ongoing  →  completed
+     ↘
+     cancelled
+```
+
+* `pending` → Ride created, waiting for captain
+* `accepted` → Captain assigned
+* `ongoing` → Ride started
+* `completed` → Ride finished
+* `cancelled` → Ride cancelled by user or captain
+
+---
+

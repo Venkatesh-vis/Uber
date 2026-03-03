@@ -68,19 +68,21 @@ const captainSchema = new mongoose.Schema(
         },
 
         location: {
-            lat: {
-                type: Number,
-                default: null,
+            type: {
+                type: String,
+                enum: ["Point"],
+                default: "Point",
             },
-            lng: {
-                type: Number,
-                default: null,
+            coordinates: {
+                type: [Number],
+                default: [0, 0],
             },
         },
     },
     { timestamps: true }
 );
 
+captainSchema.index({ location: "2dsphere" });  //2dsphere index is mandatory for $near.
 const Captain = mongoose.model("Captain", captainSchema);
 
 module.exports = Captain;
