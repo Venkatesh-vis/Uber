@@ -2,7 +2,6 @@ import { useContext, useState } from "react";
 import { AuthContext } from "../../ProtectedRoute/AuthProvider.jsx";
 import { captainLogin } from "../../../api/captain/captain-api.js";
 import { SHARED_ACTION_TYPES } from "../../../reducers/sharedReducer.js";
-import { CAPTAIN_SIGNIN_ACTION_TYPES } from "../../../reducers/captainReducer.js";
 import { useDispatch } from "react-redux";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -27,11 +26,7 @@ const CaptainLogin = ({ onSwitch }) => {
         e.preventDefault();
         setLoading(true);
 
-        const successFunction = (res) => {
-            dispatch({
-                type: CAPTAIN_SIGNIN_ACTION_TYPES.SET_CAPTAIN,
-                payload: res.captain,
-            });
+        const successFunction = () => {
             setLoading(false);
             auth.checkAuth();
         };

@@ -11,23 +11,23 @@ const ProtectedRoute = ({ children }) => {
         throw new Error("ProtectedRoute must be used within AuthProvider");
     }
 
-    const { user, loading } = auth;
+    const { user, role, loading } = auth;
 
     if (loading) {
         return <Spinner />;
     }
 
-    if (!user || !user.id) {
+    if (!user || !user._id) {
         return <Navigate to="/" replace />;
     }
 
     const path = location.pathname;
 
-    if (user.role === "captain" && path.startsWith("/user")) {
+    if (role === "captain" && path.startsWith("/user")) {
         return <Navigate to="/captain-dashboard" replace />;
     }
 
-    if (user.role === "user" && path.startsWith("/captain")) {
+    if (role === "user" && path.startsWith("/captain")) {
         return <Navigate to="/user-dashboard" replace />;
     }
 

@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
 import { userLogin } from "../../../api/user/user-api.js";
-import { USER_SIGNIN_ACTION_TYPES } from "../../../reducers/userReducer.js";
 import { useDispatch } from "react-redux";
 import { SHARED_ACTION_TYPES } from "../../../reducers/sharedReducer.js";
 import { AuthContext } from "../../ProtectedRoute/AuthProvider.jsx";
@@ -27,11 +26,7 @@ const UserLogin = ({ onSwitch }) => {
         e.preventDefault();
         setLoading(true);
 
-        const successFunction = (res) => {
-            dispatch({
-                type: USER_SIGNIN_ACTION_TYPES.SET_USER,
-                payload: res.user,
-            });
+        const successFunction = () => {
             setLoading(false);
             auth.checkAuth();
         };
@@ -65,7 +60,6 @@ const UserLogin = ({ onSwitch }) => {
                     className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                 />
 
-                {/* Password Field with Eye Icon */}
                 <div className="relative">
                     <input
                         type={showPassword ? "text" : "password"}

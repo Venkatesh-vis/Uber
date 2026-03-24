@@ -7,12 +7,14 @@ import MapView from "./MapView.jsx";
 import {SHARED_ACTION_TYPES} from "../../reducers/sharedReducer.js";
 import {USER_RIDE_ACTION_TYPES} from "../../reducers/userRideReducer.js";
 import {getCurrentCity} from "../../utils.js";
+import socket from "../../socket.js";
 
 
 const UserDashboard = () => {
     const dispatch = useDispatch();
     const rideOptions = useSelector(state => state.userRide.rideOptions);
     const loading = useSelector(state => state.userRide.loading);
+    const user = useSelector(state => state.user);
 
     const handleLocationSuccess = useCallback(async (position) => {
         const lat = position.coords.latitude;
@@ -53,6 +55,29 @@ const UserDashboard = () => {
     useEffect(() => {
         requestUserLocation();
     }, [requestUserLocation]);
+
+    useEffect(() => {
+        if (!user?._id) return;
+
+        if (!socket.connected) {
+            socket.connect();
+        }
+
+        const handleConnect = () => {
+            console.log("User connected:", socket.id);
+
+            socket.emit("join", {
+                userId: user._id,
+                role: "user",
+            });
+        };
+
+        socket.on("connect", handleConnect);
+
+        return () => {
+            socket.off("connect", handleConnect);
+        };
+    }, [user?._id]);
 
 
     return (

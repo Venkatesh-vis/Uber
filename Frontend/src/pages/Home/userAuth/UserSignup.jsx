@@ -2,7 +2,6 @@ import { useContext, useState } from "react";
 import { userSignUp } from "../../../api/user/user-api.js";
 import { useDispatch } from "react-redux";
 import { SHARED_ACTION_TYPES } from "../../../reducers/sharedReducer.js";
-import { USER_SIGNIN_ACTION_TYPES } from "../../../reducers/userReducer.js";
 import { AuthContext } from "../../ProtectedRoute/AuthProvider.jsx";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -40,11 +39,7 @@ const UserSignup = ({ onSwitch }) => {
             password,
         };
 
-        const successFunction = (res) => {
-            dispatch({
-                type: USER_SIGNIN_ACTION_TYPES.SET_USER,
-                payload: res.user,
-            });
+        const successFunction = () => {
             setLoading(false);
             auth.checkAuth();
         };

@@ -55,11 +55,6 @@ const LocationInputs = () => {
         }
 
         dispatch({
-            type: USER_RIDE_ACTION_TYPES.SET_SEARCHED,
-            payload: false,
-        });
-
-        dispatch({
             type: USER_RIDE_ACTION_TYPES.SET_SELECTED_RIDE,
             payload: null,
         });
@@ -94,10 +89,6 @@ const LocationInputs = () => {
             });
         }
 
-        dispatch({
-            type: USER_RIDE_ACTION_TYPES.SET_SEARCHED,
-            payload: false,
-        });
 
         dispatch({
             type: USER_RIDE_ACTION_TYPES.SET_SELECTED_RIDE,

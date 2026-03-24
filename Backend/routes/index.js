@@ -11,6 +11,6 @@ router.use("/user", userRoutes);
 router.use("/captain", captainRoutes);
 router.use("/auth", authRoute);
 router.use("/fare", fare)
-router.use("/ride", ride);
+// router.use("/ride", ride);
 
 module.exports = router;

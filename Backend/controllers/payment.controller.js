@@ -7,34 +7,40 @@ const razorpay = new Razorpay({
 });
 
 const createOrder = async (req, res) => {
-    const { amount, captainId } = req.body;
+    try {
+        const { amount, captainId } = req.body;
 
-    if (!amount || amount <= 0 || !captainId) {
-        return res.status(400).json({
-            message: "Amount and captainId are required",
+        if (!amount || amount <= 0 || !captainId) {
+            return res.status(400).json({
+                message: "Amount and captainId are required",
+            });
+        }
+
+        const order = await razorpay.orders.create({
+            amount: amount * 100,
+            currency: "INR",
+        });
+
+        await Payment.create({
+            userId: req.auth.id,
+            captainId,
+            razorpayOrderId: order.id,
+            amount,
+            currency: "INR",
+            status: "created",
+        });
+
+        res.status(201).json({
+            orderId: order.id,
+            key: process.env.RAZORPAY_KEY_ID,
+            amount,
+            currency: "INR",
         });
     }
+    catch (error) {
+        res.status(500).json({message: "Internal Server error"});
+    }
 
-    const order = await razorpay.orders.create({
-        amount: amount * 100,
-        currency: "INR",
-    });
-
-    await Payment.create({
-        userId: req.auth.id,
-        captainId,
-        razorpayOrderId: order.id,
-        amount,
-        currency: "INR",
-        status: "created",
-    });
-
-    res.status(201).json({
-        orderId: order.id,
-        key: process.env.RAZORPAY_KEY_ID,
-        amount,
-        currency: "INR",
-    });
 };
 
 module.exports = { createOrder };

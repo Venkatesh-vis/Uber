@@ -9,3 +9,7 @@ export const captainSignUp = ( successFunction, failureFunction, requestBody  ) 
 export const captainLogin = ( successFunction, failureFunction, requestBody  ) => {
     makeServerRequest("/captain/login", REQUEST_METHOD.POST, requestBody, successFunction, failureFunction)
 }
+
+export const updateCaptainStatus = ( successFunction, failureFunction, requestBody  ) => {
+    makeServerRequest("/captain/status", REQUEST_METHOD.PUT, requestBody, successFunction, failureFunction)
+}

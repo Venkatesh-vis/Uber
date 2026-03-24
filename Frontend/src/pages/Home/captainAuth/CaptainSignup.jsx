@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import { captainSignUp } from "../../../api/captain/captain-api.js";
 import { useDispatch } from "react-redux";
-import { CAPTAIN_SIGNIN_ACTION_TYPES } from "../../../reducers/captainReducer.js";
 import { SHARED_ACTION_TYPES } from "../../../reducers/sharedReducer.js";
 import { AuthContext } from "../../ProtectedRoute/AuthProvider.jsx";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -9,6 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 const CaptainSignup = ({ onSwitch }) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [capacityWarning, setCapacityWarning] = useState("");
 
     const [form, setForm] = useState({
         firstname: "",
@@ -26,6 +26,42 @@ const CaptainSignup = ({ onSwitch }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === "vehicleType") {
+            if (value === "motorcycle") {
+                setForm(prev => ({
+                    ...prev,
+                    vehicleType: value,
+                    capacity: 1
+                }));
+                setCapacityWarning("");
+                return;
+            }
+
+            setForm(prev => ({
+                ...prev,
+                vehicleType: value
+            }));
+            setCapacityWarning("");
+            return;
+        }
+
+        if (name === "capacity") {
+            const num = Number(value);
+
+            if (form.vehicleType === "auto" && num > 3) {
+                setCapacityWarning("Auto capacity cannot be more than 3");
+                return;
+            }
+
+            if (form.vehicleType === "car" && num > 6) {
+                setCapacityWarning("Car capacity cannot exceed 6");
+                return;
+            }
+
+            setCapacityWarning("");
+        }
+
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
@@ -48,11 +84,7 @@ const CaptainSignup = ({ onSwitch }) => {
             },
         };
 
-        const successFunction = (res) => {
-            dispatch({
-                type: CAPTAIN_SIGNIN_ACTION_TYPES.SET_CAPTAIN,
-                payload: res.captain,
-            });
+        const successFunction = () => {
             setLoading(false);
             auth.checkAuth();
         };
@@ -107,7 +139,6 @@ const CaptainSignup = ({ onSwitch }) => {
                         className="w-full p-3 bg-transparent outline-none border-b border-white/40"
                     />
 
-                    {/* Password Field */}
                     <div className="relative w-full">
                         <input
                             type={showPassword ? "text" : "password"}
@@ -169,8 +200,11 @@ const CaptainSignup = ({ onSwitch }) => {
                         value={form.capacity}
                         onChange={handleChange}
                         required
-                        className="w-full p-3 bg-transparent outline-none border-b border-white/40"
+                        disabled={form.vehicleType === "motorcycle"}
+                        className="w-full p-3 bg-transparent outline-none border-b border-white/40 disabled:opacity-50"
                     />
+
+                    {capacityWarning && (<p className="text-red-500 text-sm">{capacityWarning}</p>)}
 
                     <button
                         type="submit"

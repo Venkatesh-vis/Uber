@@ -1,4 +1,3 @@
-const rideService = require("../services/ride.service");
 
 createRide = async (req, res) => {
     try {

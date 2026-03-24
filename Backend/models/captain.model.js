@@ -31,14 +31,9 @@ const captainSchema = new mongoose.Schema(
             select: false,
         },
 
-        socketId: {
-            type: String,
-            default: null,
-        },
-
         status: {
             type: String,
-            enum: ["active", "inactive"],
+            enum: ["active", "inactive", "busy"],
             default: "inactive",
         },
 
@@ -75,14 +70,15 @@ const captainSchema = new mongoose.Schema(
             },
             coordinates: {
                 type: [Number],
-                default: [0, 0],
+                required: true,
             },
         },
     },
     { timestamps: true }
 );
 
-captainSchema.index({ location: "2dsphere" });  //2dsphere index is mandatory for $near.
-const Captain = mongoose.model("Captain", captainSchema);
+captainSchema.index({ location: "2dsphere" });
+captainSchema.index({ email: 1 });
+const Captain = mongoose.models.Captain || mongoose.model("Captain", captainSchema)
 
 module.exports = Captain;

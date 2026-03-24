@@ -1,6 +1,6 @@
 import { FaUserCircle } from "react-icons/fa";
 
-const UserHeader = () => {
+const CaptainHeader = () => {
     return (
         <header className="w-full h-16 bg-white border-b flex items-center px-6">
             <div className="flex items-center gap-8">
@@ -9,15 +9,14 @@ const UserHeader = () => {
                 </div>
             </div>
 
-            <div className="ml-auto flex items-center gap-4">
+            <div className="ml-auto cursor-pointer flex items-center gap-4">
                 <button className="text-sm font-medium">
-                    Activity
+                    Profile
                 </button>
-
                 <FaUserCircle className="text-3xl cursor-pointer" />
             </div>
         </header>
     );
 };
 
-export default UserHeader;
+export default CaptainHeader;
