@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
+import {API_BASE_URL} from "./constants.js";
 
-const socket = io("https://uber-cb54.onrender.com", {
+const socket = io(API_BASE_URL, {
     autoConnect: false,
     withCredentials: true
 });
