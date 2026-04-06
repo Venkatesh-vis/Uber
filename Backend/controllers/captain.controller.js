@@ -75,8 +75,8 @@ const registerCaptain = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
+            secure: true,
+            sameSite: "None"
         });
 
         res.status(201).json({
@@ -126,8 +126,8 @@ const loginCaptain = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
+            secure: true,
+            sameSite: "None"
         });
 
         res.status(200).json({
