@@ -12,6 +12,12 @@ const paymentSchema = new mongoose.Schema({
         ref: "captain"
     },
 
+    rideId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Ride",
+        required: true
+    },
+
     razorpayOrderId: {
         type: String,
         required: true

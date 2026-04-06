@@ -10,4 +10,4 @@ server.listen(PORT, () => {
     console.log(`Server running on ${PORT}`);
 });
 
-initSocket(server);
+initSocket(server, app);

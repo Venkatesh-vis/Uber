@@ -70,7 +70,7 @@ const registerCaptain = async (req, res) => {
         const token = jwt.sign(
             { _id: captain._id, role: "captain" },
             process.env.JWT_SECRET,
-            { expiresIn: "2h" }
+            { expiresIn: "1d" }
         );
 
         res.cookie("token", token, {

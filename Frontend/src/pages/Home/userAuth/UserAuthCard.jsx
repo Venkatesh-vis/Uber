@@ -4,7 +4,7 @@ import UserLogin from "./UserLogin";
 import UserSignup from "./UserSignup.jsx";
 
 const UserAuthCard = () => {
-    const [mode, setMode] = useState("signup");
+    const [mode, setMode] = useState("login");
 
     return (
         <motion.div

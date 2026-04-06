@@ -1,70 +1,27 @@
-import React, { useEffect } from 'react';
-import CaptainStatus from "./CaptainStatus.jsx";
+import React from 'react';
 import CaptainHeader from "./CaptainHeader.jsx";
-import socket from "../../socket.js";
-import { useSelector } from "react-redux";
+import useCaptainSocket from "./captainhooks/useCaptainSocket.js";
+import IdleCaptain from "./IdleCaptain.jsx";
+import {useSelector} from "react-redux";
+import BusyCaptain from "./BusyCaptain.jsx";
+import useIsMobile from "./captainhooks/useIsMobile.js";
+import DesktopBlock from "../../shared/DesktopBlock.jsx";
 
 const CaptainDashboard = () => {
 
-    const captain = useSelector(state => state.captain);
+    const isMobile = useIsMobile();
+    useCaptainSocket();
+    const captainStatus = useSelector(state => state.captain.status);
 
-    useEffect(() => {
-        if (!captain?._id) return;
-        if (socket.connected) return;
 
-        if (!socket.connected) {
-            socket.connect();
-        }
-
-        const handleConnect = () => {
-            console.log("Captain connected:", socket.id);
-
-            socket.emit("join", {
-                userId: captain._id,
-                role: "captain",
-            });
-        };
-
-        socket.on("connect", handleConnect);
-
-        // Send live location
-        const sendLocation = () => {
-            if (!navigator.geolocation) return;
-
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const { latitude, longitude } = pos.coords;
-
-                    socket.emit("captain:location", {
-                        captainId: captain._id,
-                        lat: latitude,
-                        lng: longitude,
-                    });
-
-                    console.log("Location sent:", latitude, longitude);
-                },
-                (err) => {
-                    console.log("Location error:", err.message);
-                }
-            );
-        };
-
-        // send every 30 seconds
-        const interval = setInterval(sendLocation, 30000);
-
-        sendLocation();
-
-        return () => {
-            socket.off("connect", handleConnect);
-            clearInterval(interval);
-        };
-
-    }, [captain?._id]);
+    if (!isMobile) {
+        return <DesktopBlock />;
+    }
 
     return (
         <>
-            <CaptainHeader />
-            <CaptainStatus />
+            <CaptainHeader/>
+            {captainStatus === "busy" ? <BusyCaptain /> : <IdleCaptain />}
         </>
     );
 };

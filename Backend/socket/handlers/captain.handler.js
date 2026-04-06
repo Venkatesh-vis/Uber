@@ -1,4 +1,4 @@
-const Captain = require("../../models/Captain.model");
+const Captain = require("../../models/captain.model");
 const {SOCKET_EVENTS} = require("../sockets.events");
 
 const registerCaptainHandlers = (socket) => {
@@ -14,7 +14,6 @@ const registerCaptainHandlers = (socket) => {
                 },
             });
 
-            console.log(`Updated location for captain ${captainId}`);
         } catch (err) {
             console.log("location error:", err.message);
         }

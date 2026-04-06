@@ -13,3 +13,11 @@ export const userLogin = ( successFunction, failureFunction, requestBody  ) => {
 export const fareDetails = ( successFunction, failureFunction, requestBody  ) => {
     makeServerRequest("/fare", REQUEST_METHOD.POST, requestBody, successFunction, failureFunction)
 }
+
+export const makePayment = ( successFunction, failureFunction, requestBody  ) => {
+    makeServerRequest("/payment/create-order", REQUEST_METHOD.POST, requestBody, successFunction, failureFunction)
+}
+
+export const verifyPayment = ( successFunction, failureFunction, requestBody  ) => {
+    makeServerRequest("/payment/verify-payment", REQUEST_METHOD.POST, requestBody, successFunction, failureFunction)
+}

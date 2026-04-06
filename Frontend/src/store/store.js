@@ -3,6 +3,7 @@ import {combineReducers, createStore} from "redux";
 import sharedReducer from "../reducers/sharedReducer.js";
 import captainReducer from "../reducers/captainReducer.js";
 import userRideReducer from "../reducers/userRideReducer.js";
+import captainRideRequestReducer from "../reducers/captainRideRequestReducer.js";
 
 
 const rootReducer = combineReducers({
@@ -10,6 +11,7 @@ const rootReducer = combineReducers({
     captain: captainReducer,
     userRide: userRideReducer,
     shared: sharedReducer,
+    captainRideRequest: captainRideRequestReducer,
 });
 
 export const store = createStore(rootReducer);

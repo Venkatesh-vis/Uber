@@ -51,3 +51,19 @@ export const searchLocations = async (query, city) => {
         ],
     }));
 };
+
+export const getPlaceName = async (lat, lon) => {
+    const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?` +
+        new URLSearchParams({
+            lat,
+            lon,
+            format: "json",
+            addressdetails: 1,
+        })
+    );
+
+    const data = await res.json();
+
+    return data.display_name; // ✅ full readable address
+};

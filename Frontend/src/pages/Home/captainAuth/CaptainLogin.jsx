@@ -5,7 +5,7 @@ import { SHARED_ACTION_TYPES } from "../../../reducers/sharedReducer.js";
 import { useDispatch } from "react-redux";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const CaptainLogin = ({ onSwitch }) => {
+const CaptainLogin = ({ onSwitch, location }) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 

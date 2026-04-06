@@ -692,284 +692,260 @@ or
 
   * Base fare
   * Per kilometer charge
-  * Per minute charge
   * Surge multiplier
   * Dynamic discount
 
-# Ride APIs Documentation
+# WebSocket (Real-Time Ride System)
 
 ---
 
-# Create Ride
+## Overview
+
+Implements real-time ride communication using Socket.IO.
+
+It enables:
+- Instant ride requests to captains
+- Real-time ride acceptance
+- Live captain location tracking
+- Ride cancellation broadcasting
 
 ---
 
-## Endpoint
+## Architecture
 
-**POST /ride/create**
+### Room Strategy
 
----
+Each socket joins a role-based room:
 
-## Description
+- user:<userId>
+- captain:<captainId>
 
-Creates a new ride after the user selects a vehicle type.
-This endpoint:
-
-* Revalidates pickup and drop coordinates
-* Recalculates fare on the backend
-* Creates a ride record with status `pending`
-* Notifies nearby captains
+This allows targeted event emission instead of broadcasting to all clients.
 
 ---
 
-## Request Body (JSON)
+## Connection Lifecycle
 
-### userId
+### Event: connection
 
-* **Type:** String (ObjectId)
-* **Required:** Yes
-* **Description:** ID of the user creating the ride
-
-### vehicleType
-
-* **Type:** String
-* **Required:** Yes
-* **Allowed Values:** `motorcycle`, `auto`, `car`
-
-### pickup
-
-* **Type:** Object
-* **Required:** Yes
-
-#### pickup.lat
-
-* Number (required)
-
-#### pickup.lng
-
-* Number (required)
-
-### drop
-
-* **Type:** Object
-* **Required:** Yes
-
-#### drop.lat
-
-* Number (required)
-
-#### drop.lng
-
-* Number (required)
+Triggered when a client connects to the server.
 
 ---
 
-## Example Request
+### Event: disconnect
+
+Triggered when a client disconnects.
+
+---
+
+## Join Room
+
+### Event: join
+
+### Description
+
+Associates a socket with a user or captain room.
+
+### Payload
 
 ```json
 {
-  "userId": "65fabc1234abcd5678ef9012",
-  "vehicleType": "car",
-  "pickup": {
-    "lat": 17.4939602,
-    "lng": 78.4008412
-  },
-  "drop": {
-    "lat": 17.4364734,
-    "lng": 78.3735921
-  }
+"userId": "string",
+"role": "user | captain"
+}
+```
+
+### Behavior
+
+- Stores socket.userId
+- Stores socket.role
+- Joins room: `${role}:${userId}`
+- Prevents duplicate joins
+
+---
+
+## Ride Request
+
+### Event: ride:request
+
+### Description
+
+Triggered when a user requests a ride.
+
+### Flow
+
+1. Find nearby captains
+2. Create ride in database
+3. Notify all nearby captains
+4. Confirm ride creation to user
+
+### Payload
+
+```json
+{
+"userId": "string",
+"pickup": { "lat": 17.2, "lng": 78.4 },
+"drop": { "lat": 17.3, "lng": 78.5 },
+"vehicleType": "car",
+"pickupAddressName": "string",
+"dropAddressName": "string",
+"userName": "string"
+}
+```
+
+### Emits
+
+→ To Captains  
+Event: ride:request
+
+```json
+{
+"rideId": "string",
+"userId": "string",
+"pickup": {},
+"drop": {},
+"vehicleType": "string"
+}
+```
+
+→ To User  
+Event: ride:created
+
+```json
+{
+"rideId": "string"
 }
 ```
 
 ---
 
-## Success Response (201 Created)
+## Ride Accept
+
+### Event: ride:accept
+
+### Payload
 
 ```json
 {
-  "message": "Ride created successfully",
-  "rideId": "65fabd9876abcd5678ef9013",
-  "status": "pending",
-  "finalFare": 283.39
+"rideId": "string"
+}
+```
+
+### Behavior
+
+- Atomically updates ride:
+  requested → accepted
+- Assigns captain
+- Prevents race conditions
+
+### Emits
+
+→ To User  
+Event: ride:accepted
+
+```json
+{
+"rideId": "string",
+"captainId": "string",
+"pickup": {},
+"drop": {},
+"vehicleType": "string"
+}
+```
+
+→ To Captain  
+Event: ride:accepted
+
+```json
+{
+"rideId": "string"
+}
+```
+
+→ To Other Captains  
+Event: ride:cancelled
+
+```json
+{
+"rideId": "string"
 }
 ```
 
 ---
 
-## Error Responses
+## Ride Cancel
 
-### 400 Bad Request
+### Event: ride:cancel
+
+### Description
+
+Cancels a ride and notifies all captains.
+
+### Payload
 
 ```json
 {
-  "message": "Invalid ride details"
+"rideId": "string"
 }
 ```
 
-### 500 Internal Server Error
+### Emits
+
+Event: ride:cancelled
 
 ```json
 {
-  "message": "Internal server error"
-}
-```
-
----
-
-# Accept Ride
-
----
-
-## Endpoint
-
-**POST /ride/accept**
-
----
-
-## Description
-
-Allows a captain to accept a pending ride.
-
-* Only rides with status `pending` can be accepted.
-* Operation is atomic (prevents race condition).
-* Updates ride status to `accepted`.
-* Assigns captain to ride.
-* Notifies user.
-
----
-
-## Request Body (JSON)
-
-### rideId
-
-* **Type:** String (ObjectId)
-* **Required:** Yes
-
-### captainId
-
-* **Type:** String (ObjectId)
-* **Required:** Yes
-
----
-
-## Example Request
-
-```json
-{
-  "rideId": "65fabd9876abcd5678ef9013",
-  "captainId": "65facb1111abcd5678ef9022"
+"rideId": "string"
 }
 ```
 
 ---
 
-## Success Response (200 OK)
+## Captain Location Update
+
+### Event: captain:location
+
+### Description
+
+Updates captain's real-time location in database.
+
+### Payload
 
 ```json
 {
-  "message": "Ride accepted successfully",
-  "rideId": "65fabd9876abcd5678ef9013",
-  "status": "accepted"
+"captainId": "string",
+"lat": 17.3,
+"lng": 78.5
 }
 ```
 
 ---
 
-## Error Responses
+### Atomic Ride Acceptance
 
-### 400 Bad Request
+findOneAndUpdate({ _id: rideId, status: "requested" })
 
-```json
-{
-  "message": "Ride already accepted or cancelled"
-}
-```
+Prevents:
+- Multiple captains accepting same ride
+- Race conditions
 
 ---
 
-# Cancel Ride
+### notifiedCaptains Field
+
+Used for:
+- Broadcasting cancellation
+- Cleaning up pending ride requests
 
 ---
 
-## Endpoint
+### Room-Based Emission
 
-**POST /ride/cancel**
+io.to(`captain:${captainId}`).emit(...)
 
----
-
-## Description
-
-Cancels a ride.
-
-* Allowed only if ride status is `pending` or `accepted`
-* Updates ride status to `cancelled`
-* Notifies relevant party (user or captain)
-
----
-
-## Request Body (JSON)
-
-### rideId
-
-* **Type:** String (ObjectId)
-* **Required:** Yes
-
-### cancelledBy
-
-* **Type:** String
-* **Required:** Yes
-* **Allowed Values:** `user`, `captain`
-
----
-
-## Example Request
-
-```json
-{
-  "rideId": "65fabd9876abcd5678ef9013",
-  "cancelledBy": "user"
-}
-```
-
----
-
-## Success Response (200 OK)
-
-```json
-{
-  "message": "Ride cancelled successfully",
-  "rideId": "65fabd9876abcd5678ef9013",
-  "status": "cancelled"
-}
-```
-
----
-
-## Error Responses
-
-### 400 Bad Request
-
-```json
-{
-  "message": "Ride cannot be cancelled"
-}
-```
-
----
-
-# Ride Lifecycle
-
-```
-pending  →  accepted  →  ongoing  →  completed
-     ↘
-     cancelled
-```
-
-* `pending` → Ride created, waiting for captain
-* `accepted` → Captain assigned
-* `ongoing` → Ride started
-* `completed` → Ride finished
-* `cancelled` → Ride cancelled by user or captain
+Ensures:
+- Efficient communication
+- No unnecessary broadcasts
 
 ---
 

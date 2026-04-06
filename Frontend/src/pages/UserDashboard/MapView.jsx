@@ -1,16 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-    MapContainer,
-    TileLayer,
-    Marker,
-    Polyline,
-    useMap
-} from "react-leaflet";
+import {MapContainer, TileLayer, Marker, Polyline, useMap} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import {useSelector} from "react-redux";
-
-const FALLBACK_CENTER = [17.385044, 78.486671];
+import { useSelector } from "react-redux";
+import Loader from "../../shared/Loader.jsx";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -23,7 +16,6 @@ L.Icon.Default.mergeOptions({
 });
 
 
-// 🔹 Auto-fit map to route bounds
 function FitBounds({ route }) {
     const map = useMap();
 
@@ -41,15 +33,29 @@ function FitBounds({ route }) {
 }
 
 
+function Recenter({ center, shouldRecenter }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!center || !shouldRecenter) return;
+
+        map.flyTo(center, map.getZoom(), { duration: 1.2 });
+    }, [center, shouldRecenter, map]);
+
+    return null;
+}
+
+
 const MapView = () => {
     const trip = useSelector(state => state.userRide);
+
     const [route, setRoute] = useState([]);
     const [animatedRoute, setAnimatedRoute] = useState([]);
 
     const pickup = trip.pickupCoords;
     const drop = trip.dropCoords;
+    const userLocation = trip.userLocation;
 
-    // 🔹 Fetch route
     useEffect(() => {
         if (!pickup || !drop) {
             setRoute([]);
@@ -58,39 +64,45 @@ const MapView = () => {
         }
 
         async function fetchRoute() {
-            const url = `https://router.project-osrm.org/route/v1/driving/${pickup[0]},${pickup[1]};${drop[0]},${drop[1]}?overview=full&geometries=geojson`;
+            try {
+                const url = `https://router.project-osrm.org/route/v1/driving/${pickup[0]},${pickup[1]};${drop[0]},${drop[1]}?overview=full&geometries=geojson`;
 
-            const res = await fetch(url);
-            const data = await res.json();
+                const res = await fetch(url);
+                const data = await res.json();
 
-            if (!data.routes?.length) return;
+                if (!data.routes?.length) return;
 
-            const coordinates =
-                data.routes[0].geometry.coordinates
-                    .map(([lng, lat]) => {
-                        if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng)) {
-                            return null;
-                        }
+                const coordinates =
+                    data.routes[0].geometry.coordinates
+                        .map(([lng, lat]) => {
+                            if (
+                                typeof lat !== "number" ||
+                                typeof lng !== "number" ||
+                                isNaN(lat) ||
+                                isNaN(lng)
+                            ) return null;
 
-                        return [lat, lng];
-                    })
-                    .filter(Boolean);
+                            return [lat, lng];
+                        })
+                        .filter(Boolean);
 
-
-            setRoute(coordinates);
+                setRoute(coordinates);
+            } catch (err) {
+                console.error("Route fetch failed:", err);
+            }
         }
 
         fetchRoute();
     }, [pickup, drop]);
 
-    // 🔹 Animate route drawing
+
     useEffect(() => {
         if (!route.length) return;
 
         let index = 0;
 
         const interval = setInterval(() => {
-            index += 8; // controls animation speed
+            index += 8;
 
             if (index >= route.length) {
                 setAnimatedRoute(route);
@@ -99,16 +111,21 @@ const MapView = () => {
             }
 
             setAnimatedRoute(route.slice(0, index));
-        }, 16); // ~60fps
+        }, 16);
 
         return () => clearInterval(interval);
     }, [route]);
 
 
-    const center =
-        pickup
-            ? [pickup[1], pickup[0]]
-            : trip.userLocation || FALLBACK_CENTER;
+    const center = pickup ? [pickup[1], pickup[0]] : userLocation;
+
+
+    if (!center) {
+        return (
+            <Loader/>
+        );
+    }
+
 
     return (
         <MapContainer
@@ -121,19 +138,18 @@ const MapView = () => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
+            <Recenter
+                center={center}
+                shouldRecenter={!!pickup}
+            />
+
             <FitBounds route={route} />
 
-            {trip.userLocation && !pickup && (
-                <Marker position={trip.userLocation} />
-            )}
+            {userLocation && !pickup && (<Marker position={userLocation} />)}
 
-            {pickup && (
-                <Marker position={[pickup[1], pickup[0]]} />
-            )}
+            {pickup && (<Marker position={[pickup[1], pickup[0]]} />)}
 
-            {drop && (
-                <Marker position={[drop[1], drop[0]]} />
-            )}
+            {drop && (<Marker position={[drop[1], drop[0]]} />)}
 
             {animatedRoute.length > 0 && (
                 <Polyline

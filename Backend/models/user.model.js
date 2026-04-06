@@ -30,11 +30,6 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false, // never return password by default
         },
-
-        socketId: {
-            type: String,
-            default: null,
-        },
     },
     { timestamps: true }
 );

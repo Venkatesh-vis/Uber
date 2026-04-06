@@ -1,10 +1,34 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { motion } from "framer-motion";
 import CaptainLogin from "./CaptainLogin";
 import CaptainSignup from "./CaptainSignup";
 
 const CaptainAuthCard = () => {
     const [mode, setMode] = useState("login");
+
+    const [location, setLocation] = useState(null);
+    const [locationError, setLocationError] = useState(null);
+
+    useEffect(() => {
+        if (!navigator.geolocation) {
+            setLocationError("Geolocation not supported");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+
+                setLocation({
+                    lat: latitude,
+                    lng: longitude,
+                });
+            },
+            (error) => {
+                setLocationError(error.message);
+            }
+        );
+    }, []);
 
     return (
         <motion.div
@@ -15,9 +39,14 @@ const CaptainAuthCard = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
         >
             {mode === "login" ? (
-                <CaptainLogin onSwitch={() => setMode("signup")} />
+                <CaptainLogin location={location}
+                              locationError={locationError}
+                              onSwitch={() => setMode("signup")} />
             ) : (
-                <CaptainSignup onSwitch={() => setMode("login")} />
+                <CaptainSignup
+                    location={location}
+                    locationError={locationError}
+                    onSwitch={() => setMode("login")} />
             )}
         </motion.div>
     );

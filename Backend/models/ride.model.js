@@ -53,6 +53,21 @@ const rideSchema = new mongoose.Schema({
         enum: ["requested", "accepted", "ongoing", "completed", "cancelled"],
         default: "requested",
     },
+    notifiedCaptains: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Captain",
+        }
+    ],
+    otp: {
+        type: String,
+        default: null,
+    },
+
+    otpVerified: {
+        type: Boolean,
+        default: false,
+    },
 
 }, { timestamps: true });
 

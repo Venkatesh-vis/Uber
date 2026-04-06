@@ -5,7 +5,7 @@ import { SHARED_ACTION_TYPES } from "../../../reducers/sharedReducer.js";
 import { AuthContext } from "../../ProtectedRoute/AuthProvider.jsx";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const CaptainSignup = ({ onSwitch }) => {
+const CaptainSignup = ({ onSwitch, location }) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [capacityWarning, setCapacityWarning] = useState("");
@@ -69,6 +69,11 @@ const CaptainSignup = ({ onSwitch }) => {
         e.preventDefault();
         setLoading(true);
 
+        const geoLocation = {
+            type: "Point",
+            coordinates: [location.lng, location.lat],
+        };
+
         const payload = {
             fullname: {
                 firstname: form.firstname,
@@ -82,6 +87,7 @@ const CaptainSignup = ({ onSwitch }) => {
                 capacity: Number(form.capacity),
                 vehicleType: form.vehicleType,
             },
+            location: geoLocation
         };
 
         const successFunction = () => {

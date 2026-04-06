@@ -1,5 +1,5 @@
 import {useDispatch, useSelector} from "react-redux";
-import LocationInputs from "./LocationInputs";
+import LocationInputs from "./LocationInputs.jsx";
 import {SHARED_ACTION_TYPES} from "../../reducers/sharedReducer.js";
 import {USER_RIDE_ACTION_TYPES} from "../../reducers/userRideReducer.js";
 import {fareDetails} from "../../api/user/user-api.js";

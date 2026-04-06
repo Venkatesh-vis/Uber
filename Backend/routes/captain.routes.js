@@ -11,4 +11,5 @@ router.get("/logout", auth(["captain"]), logoutCaptain)
 router.put("/status", auth(["captain"]), updateCaptainStatus)
 
 
+
 module.exports = router

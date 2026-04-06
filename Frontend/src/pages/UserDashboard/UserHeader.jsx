@@ -11,7 +11,7 @@ const UserHeader = () => {
 
             <div className="ml-auto flex items-center gap-4">
                 <button className="text-sm font-medium">
-                    Activity
+                    Profile
                 </button>
 
                 <FaUserCircle className="text-3xl cursor-pointer" />

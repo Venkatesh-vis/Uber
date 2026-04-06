@@ -36,30 +36,32 @@ const CaptainStatus = () => {
     if (!captain) return null;
 
     return (
-        <div className="flex items-center gap-4 p-4">
-            <button
-                onClick={toggleStatus}
-                disabled={loading}
-                className={`relative w-14 h-7 cursor-pointer flex items-center rounded-full transition-colors duration-300 ${
-                    captain.status === "active"
-                        ? "bg-green-500"
-                        : "bg-gray-400"
-                }`}
-            >
-                <span
-                    className={`absolute left-1 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+        <div className="flex justify-center items-center p-4">
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={toggleStatus}
+                    disabled={loading}
+                    className={`relative w-14 h-7 cursor-pointer flex items-center rounded-full transition-colors duration-300 ${
                         captain.status === "active"
-                            ? "translate-x-7"
-                            : ""
+                            ? "bg-green-500"
+                            : "bg-gray-400"
                     }`}
-                />
-            </button>
+                >
+                    <span
+                        className={`absolute left-1 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                            captain.status === "active"
+                                ? "translate-x-7"
+                                : ""
+                        }`}
+                    />
+                </button>
 
-            <p className="text-lg font-semibold">
-                {captain.status === "active"
-                    ? "Go Offline"
-                    : "Go Online"}
-            </p>
+                <p className="text-lg font-semibold">
+                    {captain.status === "active"
+                        ? "Go Offline"
+                        : "Go Online"}
+                </p>
+            </div>
         </div>
     );
 };

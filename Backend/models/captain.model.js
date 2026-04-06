@@ -78,7 +78,6 @@ const captainSchema = new mongoose.Schema(
 );
 
 captainSchema.index({ location: "2dsphere" });
-captainSchema.index({ email: 1 });
 const Captain = mongoose.models.Captain || mongoose.model("Captain", captainSchema)
 
 module.exports = Captain;
