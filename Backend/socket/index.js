@@ -7,8 +7,12 @@ const {SOCKET_EVENTS} = require("./sockets.events");
 let io;
 
 const initSocket = (server, app) => {
-    io = new Server(server, {
-        cors: { origin: "*" }
+    const io = new Server(server, {
+        cors: {
+            origin: "https://uber-three-pi.vercel.app",
+            methods: ["GET", "POST"],
+            credentials: true
+        }
     });
 
     app.set("io", io);

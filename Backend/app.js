@@ -11,7 +11,7 @@ const routes = require("./routes");
 connectToDB();
 
 app.use(cors({
-    origin: "https://uber-three-pi.vercel.app/",
+    origin: "https://uber-three-pi.vercel.app",
     credentials: true
 }));
 app.use(express.json());
