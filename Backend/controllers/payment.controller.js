@@ -10,25 +10,53 @@ const razorpay = new Razorpay({
 });
 
 const createOrder = async (req, res) => {
-    const { rideId } = req.body;
+    try {
+        const { rideId } = req.body;
 
-    const ride = await Ride.findById(rideId);
+        const ride = await Ride.findById(rideId);
 
-    const order = await razorpay.orders.create({
-        amount: ride.fare * 100,
-        currency: "INR",
-    });
+        if (!ride) {
+            return res.status(404).json({ message: "Ride not found" });
+        }
 
-    await Payment.create({
-        userId: ride.user,
-        captainId: ride.captain,
-        rideId,
-        razorpayOrderId: order.id,
-        amount: ride.fare,
-        status: "created",
-    });
+        // Check existing payment PREVENT DOUBLE CLICK ISSUE
+        const existingPayment = await Payment.findOne({
+            rideId,
+            status: { $in: ["created", "paid"] }
+        });
 
-    res.json({ order });
+        if (existingPayment) {
+            return res.json({
+                order: {
+                    id: existingPayment.razorpayOrderId,
+                    amount: existingPayment.amount * 100,
+                    currency: existingPayment.currency
+                }
+            });
+        }
+
+
+        const order = await razorpay.orders.create({
+            amount: ride.fare * 100,
+            currency: "INR",
+        });
+
+        await Payment.create({
+            userId: ride.user,
+            captainId: ride.captain,
+            rideId,
+            razorpayOrderId: order.id,
+            amount: ride.fare,
+            status: "created",
+        });
+
+        res.json({ order });
+    }
+
+    catch (err) {
+        console.log("create order error:", err.message);
+        return res.status(500).json({ message: "Failed to create order" });
+    }
 };
 
 const verifyPayment = async (req, res) => {
@@ -65,6 +93,27 @@ const verifyPayment = async (req, res) => {
 
         if (!payment) {
             return res.status(404).json({ message: "Payment not found" });
+        }
+
+        // Already paid
+        if (payment.status === "paid") {
+            return res.json({ success: true });
+        }
+
+        // Check duplicate successful payment for same ride
+        const alreadyPaid = await Payment.findOne({
+            rideId,
+            status: "paid"
+        });
+
+        if (alreadyPaid) {
+            // Duplicate payment (refund this one)
+            await razorpay.payments.refund(razorpay_payment_id);
+
+            return res.json({
+                success: true,
+                message: "Duplicate payment detected, refunded"
+            });
         }
 
         if (payment.status === "paid") {

@@ -73,10 +73,6 @@ const useUserSocket = () => {
 
         const handleRideCompleted = ({ rideId }) => {
 
-            console.log("Ride completed event received for rideId:", rideId);
-
-            console.log('rideState.currentRideId',rideState)
-
             if (rideState.currentRideId !== rideId) return;
 
             dispatch({

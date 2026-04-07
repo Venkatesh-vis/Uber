@@ -172,7 +172,6 @@ const registerRideHandlers = (io, socket) => {
                 chatRoom,
             });
 
-            console.log("📡 Emitting ride:accepted to:", `user:${ride.user}`);
 
             // Cancel for other captains
             if (ride.notifiedCaptains?.length) {
@@ -218,7 +217,6 @@ const registerRideHandlers = (io, socket) => {
 
             io.to(room).emit(SOCKET_EVENTS.RIDE_STARTED, {rideId,});
 
-            console.log("✅ OTP VERIFIED, ride started:", rideId);
 
         } catch (err) {
             console.log("OTP verify error:", err.message);

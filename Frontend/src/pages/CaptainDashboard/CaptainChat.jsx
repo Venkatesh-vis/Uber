@@ -7,7 +7,6 @@ const CaptainChat = () => {
     const captain = useSelector(state => state.captain);
     const { messages, sendMessage } = useChatSocket(rideId, captain._id);
 
-    console.log(useSelector(state => state.captainRideRequest.acceptedRide.ride.otpVerified));
 
     if (!rideId || !captain._id) return null;
 

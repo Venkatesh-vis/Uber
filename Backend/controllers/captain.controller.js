@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
 const captainModel = require("../models/captain.model");
 
 /* ===================== REGISTER CAPTAIN ===================== */
@@ -121,7 +120,7 @@ const loginCaptain = async (req, res) => {
         const token = jwt.sign(
             { _id: captain._id, role: "captain" },
             process.env.JWT_SECRET,
-            { expiresIn: "2h" }
+            { expiresIn: "1d" }
         );
 
         res.cookie("token", token, {
@@ -140,29 +139,14 @@ const loginCaptain = async (req, res) => {
 
 };
 
-/* ===================== GET CAPTAIN PROFILE ===================== */
-const getCaptainProfile = async (req, res) => {
-    try {
-        const captain = await captainModel.findById(req.auth.id);
-
-        if (!captain) {
-            return res.status(404).json({ message: "Captain not found" });
-        }
-
-        res.status(200).json(captain);
-    }
-    catch {
-        res.status(500).json({message: "Internal Server error",});
-    }
-};
 
 /* ===================== LOGOUT CAPTAIN ===================== */
 const logoutCaptain = async (req, res) => {
     try {
         res.clearCookie("token", {
             httpOnly: true,
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
+            sameSite: "None",
+            secure: true,
         });
 
         res.status(200).json({ message: "Logged out successfully" });
@@ -203,4 +187,104 @@ const updateCaptainStatus = async (req, res) => {
         res.status(500).json({ message: "Internal Server error" });
     }
 };
-module.exports = {registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain, updateCaptainStatus,};
+
+const updateCaptainDetails = async (req, res) => {
+    try {
+        const { fullname, email, vehicle } = req.body;
+
+        const captainId = req.auth.id;
+
+        const updateFields = {};
+
+        if (fullname) {
+            if (fullname.firstname && fullname.firstname.length < 4) {
+                return res.status(400).json({message: "Firstname must be at least 4 characters long"});
+            }
+
+            if (fullname.lastname && fullname.lastname.length < 4) {
+                return res.status(400).json({message: "Lastname must be at least 4 characters long"});
+            }
+
+            if (fullname.firstname) {
+                updateFields["fullname.firstname"] = fullname.firstname;
+            }
+
+            if (fullname.lastname) {
+                updateFields["fullname.lastname"] = fullname.lastname;
+            }
+        }
+
+        if (email) {
+            const normalizedEmail = email.trim().toLowerCase();
+
+            const existingCaptain = await captainModel.findOne({ email: normalizedEmail });
+
+            if (existingCaptain && existingCaptain._id.toString() !== captainId.toString()) {
+                return res.status(40).json({message: "Email already in use"});
+            }
+
+            updateFields.email = normalizedEmail;
+        }
+
+        if (vehicle) {
+            if (vehicle.color && vehicle.color.length < 3) {
+                return res.status(400).json({message: "Vehicle color must be at least 3 characters"});
+            }
+
+            if (vehicle.plate && vehicle.plate.length < 6) {
+                return res.status(400).json({message: "Plate must be at least 6 characters"});
+            }
+
+            if (vehicle.capacity && vehicle.capacity < 1) {
+                return res.status(400).json({message: "Capacity must be at least 1"});
+            }
+
+            if (vehicle.vehicleType) {
+                const validTypes = ["car", "motorcycle", "auto"];
+                if (!validTypes.includes(vehicle.vehicleType)) {
+                    return res.status(400).json({message: "Invalid vehicle type"});
+                }
+            }
+
+            if (vehicle.color) {
+                updateFields["vehicle.color"] = vehicle.color;
+            }
+
+            if (vehicle.plate) {
+                updateFields["vehicle.plate"] = vehicle.plate;
+            }
+
+            if (vehicle.capacity !== undefined) {
+                updateFields["vehicle.capacity"] = vehicle.capacity;
+            }
+
+            if (vehicle.vehicleType) {
+                updateFields["vehicle.vehicleType"] = vehicle.vehicleType;
+            }
+        }
+
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({message: "No valid fields provided"});
+        }
+
+        const updatedCaptain = await captainModel.findByIdAndUpdate(
+            captainId,
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedCaptain) {
+            return res.status(404).json({message: "Captain not found"});
+        }
+
+        return res.status(200).json(updatedCaptain);
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Internal Server error"
+        });
+    }
+};
+
+module.exports = {registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain, updateCaptainStatus, updateCaptainDetails};

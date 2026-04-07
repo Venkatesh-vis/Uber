@@ -8,10 +8,10 @@ import useUserLocation from "./userHooks/useUserLocation.js";
 
 const UserDashboard = () => {
     const rideStatus = useSelector(state => state.userRide.rideStatus);
+
     useUserSocket();
     useUserLocation();
 
-    console.log('rideStatus', rideStatus);
 
     return (
         <div className="flex flex-col h-screen w-full">

@@ -13,3 +13,11 @@ export const captainLogin = ( successFunction, failureFunction, requestBody  ) =
 export const updateCaptainStatus = ( successFunction, failureFunction, requestBody  ) => {
     makeServerRequest("/captain/status", REQUEST_METHOD.PUT, requestBody, successFunction, failureFunction)
 }
+
+export const logoutCaptain = ( successFunction, failureFunction ) => {
+    makeServerRequest("/captain/logout", REQUEST_METHOD.POST, undefined, successFunction, failureFunction)
+}
+
+export const updateCaptain = ( successFunction, failureFunction, requestBody  ) => {
+    makeServerRequest("/captain/update-captain", REQUEST_METHOD.PUT, requestBody, successFunction, failureFunction)
+}

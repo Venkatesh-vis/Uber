@@ -113,49 +113,6 @@ The request body must contain the following fields:
 }
 ```
 
-# User Profile
-
----
-
-## Endpoint
-
-### **GET /users/profile**
-
----
-
-## Description
-
-Retrieves the authenticated user's profile information.  
-Requires a valid JWT token sent via cookies or the Authorization header.  
-The token is verified, checked against the blacklist, and the associated user is returned.
-
----
-
-## Success Response (JSON)
-
-```json
-{
-  "_id": "694ccf472118289710c9b03e",
-  "fullname": {
-    "firstname": "John",
-    "lastname": "Doe"
-  },
-  "email": "john@example.com"
-}
-```
-
----
-
-## Possible Errors
-
-### **401 Unauthorized**
-- No token provided
-- Invalid token
-- Expired token
-- Token blacklisted
-
----
-
 # User Logout
 
 ---
@@ -272,7 +229,7 @@ This endpoint performs:
 
 ---
 
-### location (optional)
+### location
 
 #### location.lat
 - Type: Number
@@ -437,56 +394,6 @@ Validates input, checks stored hashed password, and returns a JWT token along wi
   ]
 }
 ```
-
----
-
-# Captain Profile
-
----
-
-## Endpoint
-
-### **POST /captain/profile**
-
----
-
-## Description
-
-Retrieves the authenticated captain's profile.  
-Requires a valid JWT token supplied via cookies or Authorization header.  
-Token is verified, checked against blacklist, and captain details are returned.
-
----
-
-## Success Response (JSON)
-
-```json
-{
-  "_id": "695a12b41ed98c88dfd4413a",
-  "fullname": {
-    "firstname": "Rahul",
-    "lastname": "Sharma"
-  },
-  "email": "rahul.captain@example.com",
-  "vehicle": {
-    "color": "Black",
-    "plate": "MH09123456",
-    "capacity": 3,
-    "vehicleType": "car"
-  },
-  "status": "inactive"
-}
-```
-
----
-
-## Possible Errors
-
-### **401 Unauthorized**
-- No token provided
-- Token blacklisted
-- Invalid token
-- Expired token
 
 ---
 

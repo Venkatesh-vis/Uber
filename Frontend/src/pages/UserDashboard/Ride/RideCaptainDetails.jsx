@@ -73,7 +73,10 @@ const RideCaptainDetails = () => {
                             ))}
                         </div>
 
-                        {rideOngoing && <MakePaymentButton/>}
+                        {rideOngoing &&
+                            <div className="flex justify-center">
+                                <MakePaymentButton />
+                            </div>}
 
                     </div>
                 </div>

@@ -21,3 +21,11 @@ export const makePayment = ( successFunction, failureFunction, requestBody  ) =>
 export const verifyPayment = ( successFunction, failureFunction, requestBody  ) => {
     makeServerRequest("/payment/verify-payment", REQUEST_METHOD.POST, requestBody, successFunction, failureFunction)
 }
+
+export const logout = ( successFunction, failureFunction ) => {
+    makeServerRequest("/user/logout", REQUEST_METHOD.POST, undefined, successFunction, failureFunction)
+}
+
+export const updateUser = (requestBody, successFunction, failureFunction) => {
+    makeServerRequest("/user/update-user", REQUEST_METHOD.PUT, requestBody, successFunction, failureFunction);
+};

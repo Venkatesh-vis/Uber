@@ -1,3 +1,4 @@
+import {useState} from "react";
 import { FiArrowUpRight } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { SHARED_ACTION_TYPES } from "../../reducers/sharedReducer";
@@ -6,12 +7,16 @@ import socket from "../../socket";
 import {makePayment, verifyPayment} from "../../api/user/user-api.js";
 import {USER_RIDE_ACTION_TYPES} from "../../reducers/userRideReducer.js";
 
+
 const MakePaymentButton = () => {
     const dispatch = useDispatch();
     const rideId = useSelector(state => state.userRide.currentRideId);
+    const [loading, setLoading] = useState(false);
 
     const handlePayment = () => {
-        if (!rideId) return;
+        if (!rideId || loading) return;
+
+        setLoading(true);
 
         const successFunction = (data) => {
             const { order } = data;
@@ -30,6 +35,7 @@ const MakePaymentButton = () => {
 
                 modal: {
                     ondismiss: () => {
+                        setLoading(false);
                         dispatch({
                             type: SHARED_ACTION_TYPES.SET_MESSAGE,
                             payload: "Payment cancelled",
@@ -43,6 +49,7 @@ const MakePaymentButton = () => {
         };
 
         const failureFunction = (err) => {
+            setLoading(false);
             dispatch({
                 type: SHARED_ACTION_TYPES.SET_MESSAGE,
                 payload: err?.data?.message || "Order creation failed",
@@ -56,6 +63,7 @@ const MakePaymentButton = () => {
     const handleVerify = (response) => {
 
         const successFunction = () => {
+            setLoading(false);
             dispatch({
                 type: SHARED_ACTION_TYPES.SET_MESSAGE,
                 payload: "Payment successful",
@@ -95,6 +103,7 @@ const MakePaymentButton = () => {
         };
 
         const failureFunction = (err) => {
+            setLoading(false);
             dispatch({
                 type: SHARED_ACTION_TYPES.SET_MESSAGE,
                 payload: err?.data?.message || "Payment verification failed",
@@ -113,6 +122,7 @@ const MakePaymentButton = () => {
     return (
         <button
             onClick={handlePayment}
+            disabled={loading}
             className="relative flex items-center overflow-hidden rounded-2xl bg-white text-black shadow-md group"
         >
             <span className="absolute inset-0 bg-green-600 -translate-x-full transition-transform duration-300 group-hover:translate-x-0"></span>
@@ -126,7 +136,7 @@ const MakePaymentButton = () => {
                 </div>
 
                 <span className="px-4 py-1 transition-colors duration-300 group-hover:text-white">
-                    Make Payment
+                    {loading ? "Processing..." : "Make Payment"}
                 </span>
             </div>
         </button>
