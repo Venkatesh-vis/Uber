@@ -287,4 +287,4 @@ const updateCaptainDetails = async (req, res) => {
     }
 };
 
-module.exports = {registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain, updateCaptainStatus, updateCaptainDetails};
+module.exports = {registerCaptain, loginCaptain, logoutCaptain, updateCaptainStatus, updateCaptainDetails};

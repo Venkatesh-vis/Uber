@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FaUserCircle } from "react-icons/fa";
 import {FiEdit2, FiCheck, FiLogOut, FiArrowLeft} from "react-icons/fi";
-import { USER_RIDE_ACTION_TYPES } from "../../reducers/userRideReducer.js";
 import {useNavigate} from "react-router-dom";
 import {logout, updateUser} from "../../api/user/user-api.js";
 import {SHARED_ACTION_TYPES} from "../../reducers/sharedReducer.js";
