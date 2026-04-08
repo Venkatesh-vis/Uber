@@ -49,16 +49,8 @@ const createOrder = async (req, res) => {
     }
 
     catch (err) {
-        console.log("======== ERROR START ========");
         console.log("RAW ERROR:", err);
-        console.log("ERROR KEYS:", Object.keys(err || {}));
-        console.log("ERROR STRING:", JSON.stringify(err, null, 2));
-        console.log("======== ERROR END =========");
-
-        return res.status(500).json({
-            message: "Failed to create order",
-            debug: err?.error?.description || "unknown"
-        });
+        return res.status(500).json({message: "Failed to create order"});
     }
 };
 
