@@ -7,11 +7,13 @@ const cookieParser = require("cookie-parser");
 const connectToDB = require("./db/db");
 const routes = require("./routes");
 
+let dev = true;
+
 //connecting to the db
 connectToDB();
 
 app.use(cors({
-    origin: "https://uber-three-pi.vercel.app",
+    origin: dev ? "http://localhost:8000" : "https://uber-three-pi.vercel.app",
     credentials: true
 }));
 app.use(express.json());

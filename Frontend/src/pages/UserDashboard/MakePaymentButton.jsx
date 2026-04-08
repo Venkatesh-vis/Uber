@@ -75,6 +75,11 @@ const MakePaymentButton = () => {
             });
 
             dispatch({
+                type: USER_RIDE_ACTION_TYPES.SET_RIDE_ONGOING,
+                payload: false,
+            });
+
+            dispatch({
                 type: USER_RIDE_ACTION_TYPES.SET_PICKUP,
                 payload: null,
             });

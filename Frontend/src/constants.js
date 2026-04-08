@@ -1,4 +1,6 @@
-export const API_BASE_URL = import.meta.env.VITE_BASE_URL
+let dev = true;
+
+export const API_BASE_URL = dev ? "http://localhost:5000" : import.meta.env.VITE_BASE_URL
 
 export const REACT_APP_RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID ;
 

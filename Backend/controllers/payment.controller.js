@@ -22,22 +22,17 @@ const createOrder = async (req, res) => {
         // Check existing payment PREVENT DOUBLE CLICK ISSUE
         const existingPayment = await Payment.findOne({
             rideId,
-            status: { $in: ["created", "paid"] }
+            status: "paid"
         });
 
         if (existingPayment) {
-            return res.json({
-                order: {
-                    id: existingPayment.razorpayOrderId,
-                    amount: existingPayment.amount * 100,
-                    currency: existingPayment.currency
-                }
-            });
+            return res.status(400).json({message: "Ride already paid"});
         }
 
+        const amount = Math.round(Number(ride.fare) * 100);
 
         const order = await razorpay.orders.create({
-            amount: ride.fare * 100,
+            amount,
             currency: "INR",
         });
 
@@ -54,8 +49,16 @@ const createOrder = async (req, res) => {
     }
 
     catch (err) {
-        console.log("create order error:", err.message);
-        return res.status(500).json({ message: "Failed to create order" });
+        console.log("======== ERROR START ========");
+        console.log("RAW ERROR:", err);
+        console.log("ERROR KEYS:", Object.keys(err || {}));
+        console.log("ERROR STRING:", JSON.stringify(err, null, 2));
+        console.log("======== ERROR END =========");
+
+        return res.status(500).json({
+            message: "Failed to create order",
+            debug: err?.error?.description || "unknown"
+        });
     }
 };
 

@@ -5,11 +5,12 @@ const registerChatHandlers = require("./handlers/chat.handler");
 const {SOCKET_EVENTS} = require("./sockets.events");
 
 let io;
+let dev = true;
 
 const initSocket = (server, app) => {
     const io = new Server(server, {
         cors: {
-            origin: "https://uber-three-pi.vercel.app",
+            origin: dev ? "http://localhost:8000" : "https://uber-three-pi.vercel.app",
             methods: ["GET", "POST"],
             credentials: true
         }
