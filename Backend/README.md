@@ -856,3 +856,238 @@ Ensures:
 
 ---
 
+# Payment Integration
+
+---
+
+## Overview
+
+The backend uses Razorpay test-mode checkout for ride payments.
+
+Payment is handled in two steps:
+- create a Razorpay order for a ride
+- verify the payment signature after checkout succeeds
+
+The backend is responsible for:
+- creating the Razorpay order
+- storing payment records in MongoDB
+- preventing duplicate successful payments
+- marking the ride as completed only after verification
+- resetting captain availability after ride completion
+
+---
+
+## Required Environment Variables
+
+Add these variables in `Backend/.env`:
+
+```env
+RAZORPAY_TEST_KEY_ID=your_razorpay_test_key_id
+RAZORPAY_TEST_KEY_SECRET=your_razorpay_test_key_secret
+```
+
+---
+
+## Payment Routes
+
+### **POST /payment/create-order**
+
+Creates a Razorpay order for the specified ride.
+
+### Auth
+
+- Protected route
+- Allowed role: `user`
+
+### Request Body
+
+```json
+{
+  "rideId": "ride_mongodb_object_id"
+}
+```
+
+### Backend Flow
+
+1. Find the ride by `rideId`
+2. Check whether the ride has already been paid
+3. Convert `ride.fare` into paise using `fare * 100`
+4. Create a Razorpay order with currency `INR`
+5. Save a `Payment` document with status `created`
+6. Return the created Razorpay order to the client
+
+### Success Response
+
+```json
+{
+  "order": {
+    "id": "order_xxx",
+    "amount": 25000,
+    "currency": "INR"
+  }
+}
+```
+
+### Possible Errors
+
+#### 404 Not Found
+
+```json
+{
+  "message": "Ride not found"
+}
+```
+
+#### 400 Bad Request
+
+```json
+{
+  "message": "Ride already paid"
+}
+```
+
+#### 500 Internal Server Error
+
+```json
+{
+  "message": "Failed to create order"
+}
+```
+
+---
+
+### **POST /payment/verify-payment**
+
+Verifies the Razorpay payment after checkout succeeds.
+
+### Auth
+
+- Protected route
+- Allowed role: `user`
+
+### Request Body
+
+```json
+{
+  "razorpay_order_id": "order_xxx",
+  "razorpay_payment_id": "pay_xxx",
+  "razorpay_signature": "signature_xxx",
+  "rideId": "ride_mongodb_object_id"
+}
+```
+
+### How Payment Verification Is Done
+
+1. The backend finds the ride using `rideId`
+2. It confirms the ride belongs to the authenticated user
+3. It creates the signature base string:
+
+```text
+razorpay_order_id + "|" + razorpay_payment_id
+```
+
+4. It generates an HMAC SHA256 hash using `RAZORPAY_TEST_KEY_SECRET`
+5. It compares that generated hash with `razorpay_signature`
+6. If both signatures match, the payment is treated as valid
+
+This ensures the payment confirmation actually came from Razorpay and was not modified on the client.
+
+### Backend Flow After Successful Verification
+
+1. Load the payment record using `razorpay_order_id`
+2. Return success immediately if it was already marked as paid
+3. Check if another successful payment already exists for the same ride
+4. If a duplicate successful payment exists, refund the new payment
+5. Otherwise:
+- save `razorpayPaymentId`
+- save `razorpaySignature`
+- set payment status to `paid`
+- update ride status to `completed`
+- set the captain status back to `active`
+- emit `ride:completed` to the ride chat room
+- close sockets in the ride chat room
+
+### Success Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Duplicate Payment Response
+
+```json
+{
+  "success": true,
+  "message": "Duplicate payment detected, refunded"
+}
+```
+
+### Possible Errors
+
+#### 403 Unauthorized
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+#### 400 Bad Request
+
+```json
+{
+  "message": "Invalid signature"
+}
+```
+
+#### 404 Not Found
+
+```json
+{
+  "message": "Payment not found"
+}
+```
+
+#### 500 Internal Server Error
+
+```json
+{
+  "message": "Payment verification failed"
+}
+```
+
+---
+
+## Payment Model
+
+The `Payment` collection stores:
+- `userId`
+- `captainId`
+- `rideId`
+- `razorpayOrderId`
+- `razorpayPaymentId`
+- `razorpaySignature`
+- `amount`
+- `currency`
+- `status`
+
+### Supported Status Values
+
+- `created`
+- `paid`
+- `failed`
+- `refunded`
+
+---
+
+## Important Notes
+
+- Amount is sent to Razorpay in paise, not rupees.
+- Ride completion happens only after payment verification succeeds.
+- Duplicate successful payments for the same ride are refunded.
+- This implementation is configured for Razorpay test credentials.
+
+---
+
