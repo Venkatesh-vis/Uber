@@ -2,6 +2,12 @@
 
 A full-stack Uber-style ride-hailing platform built with the MERN stack, featuring real-time ride updates, live location tracking, and secure authentication. The project demonstrates strong skills in scalable API design, real-time systems, and full-stack architecture.
 
+<p align="center">
+  <a href="https://portfolio-sigma-ten-auyltbzoy2.vercel.app/demo.mp4" target="_blank">
+    <img src="https://img.shields.io/badge/▶_Watch_Full_Demo-7C3AED?style=for-the-badge&logo=play&logoColor=white" alt="Watch Demo" />
+  </a>
+</p>
+
 ---
 
 ## Features
